@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Scanner;
-import static java.lang.Integer.parseInt;
 
 public class Decoder {
 
@@ -15,7 +14,7 @@ public class Decoder {
         new Decoder().process();
     }
 
-    // 940,  TOO LOW: 209889120, TOO LOW: 309889120,  TOO LOW: 1000000000,  NOT RIGHT 10000000000
+    // 940,  13476220616073
     private void process() {
         Instant one = Instant.now();
         Scanner s = getScanner();
@@ -67,7 +66,7 @@ public class Decoder {
             switch (type) {
                 case TYPE_LITERAL:
                     byte stop = 1;
-                    int number = 0;
+                    long number = 0;
                     while (stop == 1) {
                         stop = nextByte(1);
                         var part = nextByte(4);
@@ -90,7 +89,8 @@ public class Decoder {
                             list.add(nextPacket());
                         }
                     }
-                    return new PacketList(version, type, begin-cur, list);
+                    var packet = new PacketList(version, type, begin-cur, list);
+                    return packet;
             }
         }
     }
@@ -111,9 +111,9 @@ public class Decoder {
     }
 
     public static class PacketNumber extends Packet {
-        public final int number;
+        public final long number;
 
-        public PacketNumber(byte version, byte type, int size, int number) {
+        public PacketNumber(byte version, byte type, int size, long number) {
             super(version, type, size);
             this.number = number;
         }
@@ -130,7 +130,7 @@ public class Decoder {
     }
 
     public static class PacketList extends Packet {
-        public final List<Packet> children;
+        public List<Packet> children;
 
         public PacketList(byte version, byte type, int size, List<Packet> children) {
             super(version, type, size);
