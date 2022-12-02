@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 type Round = {you: number, me: number};
 type HandResult = (round: Round) => number;
 
-const inputContent = readFileSync("02_input.txt", 'utf-8');
+const inputContent = readFileSync("inputs/02_input.txt", 'utf-8');
 const lines = inputContent.split('\n');
 lines.pop(); // Remove last empty line
 const rounds: Round[] = lines.map(line => line.split(' '))
