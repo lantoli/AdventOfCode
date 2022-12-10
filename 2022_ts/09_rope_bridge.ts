@@ -9,12 +9,10 @@ const input: [string, number][] = lines.map(line => line.split(" ")).map(([dir, 
 type Coord = {y: number, x: number};
 
 function moveTail(tail: Coord, head: Coord) : Coord {
-    if (head.y == tail.y && Math.abs(head.x - tail.x) == 2) {
-        tail = {...tail, x: tail.x + Math.sign(head.x - tail.x)};
-    } else if (head.x == tail.x && Math.abs(head.y - tail.y) == 2) {
-        tail = {...tail, y: tail.y + Math.sign(head.y - tail.y)};
-    } else if (Math.abs(head.x - tail.x) == 2 || Math.abs(head.y - tail.y) == 2 ) {
-        tail = { y: tail.y + Math.sign(head.y - tail.y), x: tail.x + Math.sign(head.x - tail.x) };
+    const ydist = Math.abs(head.y - tail.y), xdist = Math.abs(head.x - tail.x);
+    const yinc = Math.sign(head.y - tail.y), xinc = Math.sign(head.x - tail.x);
+    if  (ydist == 2 || xdist == 2) {
+        tail = { y: tail.y + yinc, x: tail.x + xinc };
     }
     return tail;
 }
