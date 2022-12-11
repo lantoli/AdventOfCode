@@ -6,11 +6,12 @@ const lines = inputContent.split('\n');
 lines.pop(); // Remove last empty line
 
 const wide = 40, high = 6;
-let x = 1, cycle = 0;
 const when = [20, 60, 100, 140, 180, 220];
 const values: number[] = [];
 const crt: boolean[] = new Array(wide * high);
-const update= () => { update1(); update2(); };
+let x = 1, cycle = 0;
+
+const update = () => { update1(); update2(); };
 
 function update1() { if (cycle == when[values.length]) values.push(x) };
 function result1() { console.log(when.map((w, idx) => w * values[idx]).reduce((a, b) => a + b)) };
