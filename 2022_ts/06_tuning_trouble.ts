@@ -1,8 +1,6 @@
 import { readFileSync } from 'fs';
 
 const inputContent = readFileSync("inputs/06_input.txt", 'utf-8');
-const lines = inputContent.split('\n');
-lines.pop(); // Remove last empty line
 
 function position(data: String, len: number) : number {
     for (let i = len; i <= data.length; i++) {
