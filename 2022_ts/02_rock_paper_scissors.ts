@@ -6,10 +6,11 @@ type HandResult = (round: Round) => number;
 const inputContent = readFileSync("inputs/02_input.txt", 'utf-8');
 const lines = inputContent.split('\n');
 lines.pop(); // Remove last empty line
-const rounds: Round[] = lines.map(line => line.split(' '))
-                .map(([a, b]) => a == "A" ? [1, b] : a == "B" ? [2, b] : [3, b])
-                .map(([a, b]) => b == "X" ? [a, 1] : b == "Y" ? [a, 2] : [a, 3])
-                .map(([a, b]) => ({ you: Number(a), me: Number(b) }));
+
+const rounds: Round[] = lines.map(line => line.split(' ')).map(([a, b]) => ({ 
+    you: Number(a == "A" ? 1 : a == "B" ? 2 : 3),
+    me: Number(b == "X" ? 1 : b == "Y" ? 2 : 3) 
+}));
  
 function run(handle: HandResult) {
     const result = rounds.map(handle).reduce((a, b) => a + b);
