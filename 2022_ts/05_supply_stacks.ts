@@ -40,8 +40,7 @@ function moveCrates(stackFrom: Stack, stackTo: Stack, times: number) : void {
 }
 
 function run(moveOne: (stacks: Stacks, move: Move) => void) {
-    const clone = (input: string[]) => input.map(elm => elm);
-    const stacks = originalStacks.map(elm => clone(elm));
+    const stacks = originalStacks.map(elm => [...elm]); // deep copy
     moves.forEach(move => moveOne(stacks, move)); 
     console.debug(stacks.map(stack => stack.pop()!).join(""));
 };
