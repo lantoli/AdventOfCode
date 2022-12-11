@@ -1,11 +1,11 @@
 import { readFileSync } from 'fs';
 
-type Coord = { left: number, right: number };
-type CoordPair = [Coord, Coord];
-
 const inputContent = readFileSync("inputs/04_input.txt", 'utf-8');
 const lines = inputContent.split('\n');
 lines.pop(); // Remove last empty line
+
+type Coord = { left: number, right: number };
+type CoordPair = [Coord, Coord];
 
 const hasOverlap1 = ([r1, r2]: CoordPair) => r1.right >= r2.right;
 const hasOverlap2 = ([r1, r2]: CoordPair) => r1.right >= r2.left;
