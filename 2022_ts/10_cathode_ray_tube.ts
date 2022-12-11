@@ -6,47 +6,39 @@ const lines = inputContent.split('\n');
 lines.pop(); // Remove last empty line
 
 const wide = 40, high = 6;
+let x = 1, cycle = 0;
+const when = [20, 60, 100, 140, 180, 220];
+const values: number[] = [];
+const crt: boolean[] = new Array(wide * high);
+const update= () => { update1(); update2(); };
 
-const state = {
-    x: 1,
-    cycle: 0,
-    process() { this.process1(); this.process2(); },
+function update1() { if (cycle == when[values.length]) values.push(x) };
+function result1() { console.log(when.map((w, idx) => w * values[idx]).reduce((a, b) => a + b)) };
 
-    when: [20, 60, 100, 140, 180, 220],
-    values: [] as number[],
-    process1() { if (this.cycle == this.when[this.values.length]) this.values.push(this.x) },
-    result1() { console.log(this.when.map((w, idx) => w * this.values[idx]).reduce((a, b) => a + b)) },
-
-    crt: new Array(wide * high) as boolean[],
-    process2() {
-        const pos = this.cycle - 1, posLine = pos % wide;
-        this.crt[pos] = posLine >= this.x - 1 && posLine <= this.x + 1;
-    },
-    result2() {
-        this.crt.forEach((val, idx) => {
-            if (idx > 0 && idx % wide == 0) process.stdout.write("\n");
-            process.stdout.write(val ? "#" : ".");
-        });
-        process.stdout.write("\n")
-    }
+function update2() {
+    const pos = cycle - 1, posLine = pos % wide;
+    crt[pos] = posLine >= x - 1 && posLine <= x + 1;
 };
+function result2() {
+    crt.forEach((val, idx) => {
+        if (idx > 0 && idx % wide == 0) process.stdout.write("\n");
+        process.stdout.write(val ? "#" : ".");
+    });
+    process.stdout.write("\n")
+}
 
 function run() {
     for (var line of lines) {
         const [instr, arg] = line.split(" ");
         if (instr === "noop") {
-            state.cycle++;
-            state.process();
+            cycle++; update();
         } else if (instr === "addx") {
-            state.cycle++;
-            state.process();
-            state.cycle++;
-            state.process();
-            state.x += Number(arg);
+            cycle++; update(); cycle++; update();
+            x += Number(arg);
         } else throw new Error("unexpected");
     }
-    state.result1();
-    state.result2();
+    result1();
+    result2();
 };
 
 run(); // 15360, PHLHJGZA
