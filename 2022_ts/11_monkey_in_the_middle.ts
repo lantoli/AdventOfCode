@@ -26,7 +26,7 @@ const monkeysInput: Monkey[] = [
 ];
 
 function run(rounds: number, relief: boolean, monkeys: Monkey[]) {
-    monkeys = monkeys.map(monkey => ({...monkey, items: [...monkey.items]}));
+    monkeys = monkeys.map(monkey => ({...monkey, items: [...monkey.items]})); // deep copy
     const mod = BigInt(monkeys.map(monkey => monkey.module).reduce((a, b) => a * b));
     for (var round = 0; round < rounds; round++) {
         for (let monkey of monkeys) {
