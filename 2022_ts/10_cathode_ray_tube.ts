@@ -17,12 +17,10 @@ const state = {
     process1() { if (this.cycle == this.when[this.values.length]) this.values.push(this.x) },
     result1() { console.log(this.when.map((w, idx) => w * this.values[idx]).reduce((a, b) => a + b)) },
 
-    crt: new Array(wide * high).fill(false) as boolean[],
+    crt: new Array(wide * high) as boolean[],
     process2() {
-        const pos = this.cycle - 1;
-        const posLine = pos % wide;
-        const [from, to] = [Math.max(0, this.x - 1), Math.min(wide - 1, this.x + 1)];
-        if (posLine >= from && posLine <= to) this.crt[pos] = true;
+        const pos = this.cycle - 1, posLine = pos % wide;
+        this.crt[pos] = posLine >= this.x - 1 && posLine <= this.x + 1;
     },
     result2() {
         this.crt.forEach((val, idx) => {
