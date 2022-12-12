@@ -18,7 +18,7 @@ function result1() { console.log(when.map((w, idx) => w * values[idx]).reduce((a
 
 function update2() {
     const pos = cycle - 1, posLine = pos % wide;
-    crt[pos] = posLine >= x - 1 && posLine <= x + 1;
+    crt[pos] = Math.abs(posLine - x) < 2;
 };
 function result2() {
     crt.forEach((val, idx) => {
