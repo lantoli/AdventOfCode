@@ -3,12 +3,9 @@ import { readFileSync } from 'fs';
 const inputContent = readFileSync("inputs/13_input.txt", 'utf-8');
 const sampleContent = readFileSync("inputs/13_sample.txt", 'utf-8');
 
-// DONT RUN WITH UNSAFE INPUTS AS IT EVALUATES THEM
-const value = (str: string) => Function("return " + str)();
-
 function compare(left: any, right: any): number {
-    if (typeof left === "string") left = value(left);
-    if (typeof right === "string") right = value(right);
+    if (typeof left === "string") left = JSON.parse(left);
+    if (typeof right === "string") right = JSON.parse(right);
     if (Array.isArray(left) && Array.isArray(right)) {
         for (let i = 0; i < left.length && i < right.length; i++) {
             const ret = compare(left[i], right[i]);
