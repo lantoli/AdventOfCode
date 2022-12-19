@@ -9,19 +9,20 @@ type Sensor = {
     range: number;
 };
 
-
 function run1(content: string, y: number) {
     const lines = content.split('\n');
     lines.pop(); // Remove last empty line
 
     const occupied = new Set<number>();
     const sensors: Sensor[] = [];
+    const bacons = new Set<number>();
     for (const line of lines) {
         // console.debug(line);
         const [_full, xsensor, ysensor, xbacon, ybacon] = line.match(/Sensor at x=(.*), y=(.*): closest beacon is at x=(.*), y=(.*)/)!.map(Number);
         if (ysensor == y) occupied.add(xsensor);
         if (ybacon == y) occupied.add(xbacon);
         sensors.push({y: ysensor, x: xsensor, range: Math.abs(ybacon - ysensor) + Math.abs(xbacon - xsensor)});
+        if (ybacon === y) bacons.add(xbacon);
     }
 
     let maxRange = Math.max(...sensors.map(s => s.range));
@@ -30,17 +31,36 @@ function run1(content: string, y: number) {
 
     console.debug("ranges", maxRange, xini, xend);    
 
-    let count = 0;
-    for (let x = xini; x <= xend; x++) if (!occupied.has(x)) {
-        for (let sensor of sensors) {
-            if (Math.abs(sensor.y - y) + Math.abs(sensor.x - x) <= sensor.range) {
-                // console.log("count", x, sensor);
-                count++;
-                break;
-            }
+    const intervals: [number, number][] = [];
+    for (let sensor of sensors) {
+        const ydist = sensor.range - Math.abs(sensor.y - y);
+        if (ydist >= 0) {
+            const interval:[number, number] = [sensor.x - ydist, sensor.x + ydist];
+            console.debug("good", sensor, interval);
+            intervals.push(interval);    
+        } else {
+            console.debug("far", sensor);
         }
     }
-    console.debug(count);    
+    console.debug("unsorted", intervals);
+
+    // intervals.push([xini, xend]);
+
+    intervals.sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+    console.debug(intervals);    
+    let current = intervals[0][0] - 1;
+    let count = 0;
+    console.debug("current", current);
+    for (let interval of intervals) {
+        const left = Math.max(current + 1, interval[0]);
+        const right = interval[1];
+        if (left <= right) {
+            console.debug("add", right - left + 1, interval, current);
+            count += right - left + 1;
+        }
+        current = Math.max(current, interval[1]);
+    }
+    console.debug("count", count, bacons.size, count - bacons.size);
 };
 
 function run2(content: string, tunning: number, max: number) {
@@ -88,7 +108,7 @@ function run2(content: string, tunning: number, max: number) {
     }
 };
 
-//run1(sampleContent, 10); // 26 (sample)
-//run1(inputContent, 2_000_000); // 5125700
+run1(sampleContent, 10); // 26 (sample)
+run1(inputContent, 2_000_000); // 5125700
 // run2(sampleContent, 4_000_000, 20); // 56000011 (sample)
-run2(inputContent, 4_000_000, 4_000_000); // ...
+//run2(inputContent, 4_000_000, 4_000_000); // ...
