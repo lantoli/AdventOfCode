@@ -67,6 +67,63 @@ function run2(content: string, tunning: number, max: number) {
     const lines = content.split('\n');
     lines.pop(); // Remove last empty line
 
+    const sensors: Sensor[] = [];
+    for (const line of lines) {
+        // console.debug(line);
+        const [_full, xsensor, ysensor, xbacon, ybacon] = line.match(/Sensor at x=(.*), y=(.*): closest beacon is at x=(.*), y=(.*)/)!.map(Number);
+        sensors.push({y: ysensor, x: xsensor, range: Math.abs(ybacon - ysensor) + Math.abs(xbacon - xsensor)});
+    }
+
+    let maxRange = Math.max(...sensors.map(s => s.range));
+    let xini = Math.min(...sensors.map(s => s.x)) - maxRange;
+    let xend = Math.max(...sensors.map(s => s.x)) + maxRange;
+
+//    console.debug("ranges", maxRange, xini, xend);    
+
+    for (let y = 0; y <= max; y++) {
+//        console.debug("Ronda y", y);
+        let intervals: [number, number][] = [];
+        for (let sensor of sensors) {
+            const ydist = sensor.range - Math.abs(sensor.y - y);
+            if (ydist >= 0) {
+                const interval:[number, number] = [sensor.x - ydist, sensor.x + ydist];
+//                console.debug("good", sensor, interval);
+                intervals.push(interval);    
+            } else {
+  //              console.debug("far", sensor);
+            }
+        }
+//        console.debug("unsorted", intervals);
+
+        //intervals = intervals.filter(i => !intervals.some(other => (i[0] !== other[0] || i[1] !== other[1]) && i1[0] <= i2[0] && i1[1] >= i2[1]));
+
+        // console.debug("filtered", intervals);
+        // intervals.push([xini, xend]);
+
+        intervals.sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+//        console.debug(intervals);    
+        let current = 0;
+        let count = 0;
+//        console.debug("current", current);
+        for (let interval of intervals) {
+            if (count > max) {
+                console.debug("NOT FOUND", y);
+                break;
+            }
+            if (current < interval[0]) {
+                console.debug("FOUND!!!!!", current * tunning + y, y, current);
+            }
+            current = Math.max(current, interval[1] + 1);
+            count++;
+        }
+//        console.debug("count", count);
+    }
+}
+
+function run2old(content: string, tunning: number, max: number) {
+    const lines = content.split('\n');
+    lines.pop(); // Remove last empty line
+
     const occupied = new Set<number>();
     const sensors: Sensor[] = [];
     for (const line of lines) {
@@ -108,7 +165,7 @@ function run2(content: string, tunning: number, max: number) {
     }
 };
 
-run1(sampleContent, 10); // 26 (sample)
-run1(inputContent, 2_000_000); // 5125700
-// run2(sampleContent, 4_000_000, 20); // 56000011 (sample)
-//run2(inputContent, 4_000_000, 4_000_000); // ...
+//run1(sampleContent, 10); // 26 (sample)
+//run1(inputContent, 2_000_000); // 5125700
+//    run2(sampleContent, 4_000_000, 20); // 56000011 (sample)
+run2(inputContent, 4_000_000, 4_000_000); // 11379394658764
