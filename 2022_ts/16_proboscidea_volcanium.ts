@@ -7,7 +7,7 @@ type Valve = { name: string; rate: number; childNames: string[]; children: Valve
 type Player = { current: Valve, visited: Set<string> };
 type State = { me: Player, el: Player, open: Set<string>, pressure: number, minute: number, remainRate: number };
 
-function run(content: string, minutes: number, withElephant: boolean) {
+function getValves(content: string) {
     const lines = content.split('\n');
     lines.pop(); // Remove last empty line
 
@@ -18,47 +18,54 @@ function run(content: string, minutes: number, withElephant: boolean) {
     for (let valve of valves) {
         valve.children = valve.childNames.map(name => valves.find(v => v.name === name)!);
     }
-    
+    return valves;
+}
+
+function getChildPlayers(player: Player) : Player[] {
+    return player.current.children.filter(child => !player.visited.has(child.name)).map(child => 
+        ({ current: child, visited: new Set([child.name, ...player.visited])}));
+}
+
+const emptyPlayer = (player: Player) => ({ current: player.current, visited: new Set([player.current.name]) });
+
+const fillState = (state: State) => ({ me: state.me, el: state.el });
+
+function run(content: string, minutes: number, withElephant: boolean) {
+    const valves: Valve[] = getValves(content);    
     const remainRate = valves.map(valve => valve.rate).reduce((a, b) => a + b);
     const firstValve = valves.find(v => v.name === "AA")!;
     const firstPlayer: Player = { current: firstValve, visited: new Set([firstValve.name]) };
     const states: State[] = [{ me: firstPlayer, el: firstPlayer, open: new Set(), pressure: 0, minute: 1, remainRate }];
 
-    let maxMinute = 0;
-
     let ret = 0;
     while (states.length > 0) {
-        const {me, el, open, pressure, minute, remainRate} = states.pop()!;
+        const state = states.pop()!;
+        const {me, el, open, pressure, minute, remainRate} = state;
+        
         const newMinute = minute + 1;
         const remainingMinutes = minutes - newMinute + 1;
         const optimistic = remainRate * remainingMinutes;
         if (optimistic <= 0 || ret > pressure + optimistic || open.size === valves.length) continue;
 
-        const newMes: Player[] = me.current.children.filter(child => !me.visited.has(child.name)).map(child => 
-            ({ current: child, visited: new Set([child.name, ...me.visited])}));
-
-        const newEls: Player[] = el.current.children.filter(child => !el.visited.has(child.name)).map(child => 
-            ({ current: child, visited: new Set([child.name, ...el.visited])}));
-
+        const newMes = getChildPlayers(me);
+        const newEls = getChildPlayers(el);
         const openMe = me.current.rate > 0 && !open.has(me.current.name);
         const openEl = el.current.rate > 0 && !open.has(el.current.name);
 
         if (openMe) {
-            const newPressure = me.current.rate * remainingMinutes;
-            const newMe: Player = { current: me.current, visited: new Set([me.current.name]) };
-            let newState: State = { me: newMe, el, open: new Set([me.current.name, ...open]), 
-                pressure: pressure + newPressure, minute: newMinute, remainRate: remainRate - me.current.rate };
-            ret = Math.max(ret, newState.pressure);
+            const newPressure = pressure + me.current.rate * remainingMinutes;
+            ret = Math.max(ret, newPressure);
+            let newState: State = {...fillState(state), me: emptyPlayer(me), open: new Set([me.current.name, ...open]), 
+                pressure: newPressure, minute: newMinute, remainRate: remainRate - me.current.rate };
 
             if (withElephant && openEl && me.current !== el.current) {
-                const newPressure = el.current.rate * remainingMinutes;
-                const newEl: Player = { current: el.current, visited: new Set([el.current.name]) };
-                states.push({...newState, el: newEl, open: new Set([el.current.name, ...newState.open]), 
-                    pressure: newState.pressure + newPressure, remainRate: newState.remainRate - el.current.rate });
-                ret = Math.max(ret, newState.pressure + newPressure);
+                const newPressure = newState.pressure + el.current.rate * remainingMinutes;
+                ret = Math.max(ret, newPressure);
+                states.push({...newState, el: emptyPlayer(el), open: new Set([el.current.name, ...newState.open]), 
+                    pressure: newPressure, remainRate: newState.remainRate - el.current.rate });
             }
 
-            if (!withElephant || newEls.length == 0) {
+            if (!withElephant) {
                 states.push(newState);
             } else for (let newEl of newEls) {
                 states.push({...newState, el: newEl });
@@ -66,32 +73,26 @@ function run(content: string, minutes: number, withElephant: boolean) {
         }
 
         if (withElephant && openEl) {
-            const newPressure = el.current.rate * remainingMinutes;
-            const newEl: Player = { current: el.current, visited: new Set([el.current.name]) };
-            let newState: State = { me, el: newEl, open: new Set([el.current.name, ...open]), 
-                pressure: pressure + newPressure, minute: newMinute, remainRate: remainRate - el.current.rate };
-            ret = Math.max(ret, newState.pressure);
+            const newPressure = pressure + el.current.rate * remainingMinutes;
+            ret = Math.max(ret, newPressure);
+            let newState: State = {...fillState(state), el: emptyPlayer(el), open: new Set([el.current.name, ...open]), 
+                pressure: newPressure, minute: newMinute, remainRate: remainRate - el.current.rate };
 
             if (openMe && me.current !== el.current) {
-                const newPressure = me.current.rate * remainingMinutes;
-                const newMe: Player = { current: me.current, visited: new Set([me.current.name]) };
-                states.push({...newState, me: newMe, open: new Set([me.current.name, ...newState.open]), 
-                    pressure: newState.pressure + newPressure, remainRate: newState.remainRate - me.current.rate });
-                ret = Math.max(ret, newState.pressure + newPressure);
+                const newPressure = newState.pressure + me.current.rate * remainingMinutes;
+                ret = Math.max(ret, newPressure);
+                states.push({...newState, me: emptyPlayer(me), open: new Set([me.current.name, ...newState.open]), 
+                    pressure: newPressure, remainRate: newState.remainRate - me.current.rate });
                 }
             
-            if (newMes.length == 0) {
-                states.push(newState);
-            } else for (let newMe of newMes) {
+            for (let newMe of newMes) {
                 states.push({...newState, me: newMe });
             }
         }
 
-        if (withElephant) for (let newMe of newMes) for (let newEl of newEls) {
+        for (let newMe of newMes) for (let newEl of withElephant ? newEls : [el]) {
             states.push({ me: newMe, el: newEl, open, pressure, minute: newMinute, remainRate });
-        }   
-        if (!withElephant || newEls.length == 0) for (let newMe of newMes) states.push({ me: newMe, el, open, pressure, minute: newMinute, remainRate });
-        if (newMes.length == 0) for (let newEl of newEls) states.push({ me, el: newEl, open, pressure, minute: newMinute, remainRate });
+        }
     }
     console.debug(ret);
 };
@@ -100,3 +101,4 @@ run(sampleContent, 30, false); // 1651 (sample)
 run(sampleContent, 26, true); // 1707 (sample)
 run(inputContent, 30, false); // 2029
 run(inputContent, 26, true); // 2723
+
