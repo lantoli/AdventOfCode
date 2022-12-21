@@ -28,8 +28,6 @@ function getChildPlayers(player: Player) : Player[] {
 
 const emptyPlayer = (player: Player) => ({ current: player.current, visited: new Set([player.current.name]) });
 
-const fillState = (state: State) => ({ me: state.me, el: state.el });
-
 function run(content: string, minutes: number, withElephant: boolean) {
     const valves: Valve[] = getValves(content);    
     const remainRate = valves.map(valve => valve.rate).reduce((a, b) => a + b);
@@ -49,13 +47,17 @@ function run(content: string, minutes: number, withElephant: boolean) {
 
         const newMes = getChildPlayers(me);
         const newEls = getChildPlayers(el);
+        for (let newMe of newMes) for (let newEl of withElephant ? newEls : [el]) {
+            states.push({ me: newMe, el: newEl, open, pressure, minute: newMinute, remainRate });
+        }
+
         const openMe = me.current.rate > 0 && !open.has(me.current.name);
         const openEl = el.current.rate > 0 && !open.has(el.current.name);
 
         if (openMe) {
             const newPressure = pressure + me.current.rate * remainingMinutes;
             ret = Math.max(ret, newPressure);
-            let newState: State = {...fillState(state), me: emptyPlayer(me), open: new Set([me.current.name, ...open]), 
+            let newState: State = { me: emptyPlayer(me), el, open: new Set([me.current.name, ...open]), 
                 pressure: newPressure, minute: newMinute, remainRate: remainRate - me.current.rate };
 
             if (withElephant && openEl && me.current !== el.current) {
@@ -75,7 +77,7 @@ function run(content: string, minutes: number, withElephant: boolean) {
         if (withElephant && openEl) {
             const newPressure = pressure + el.current.rate * remainingMinutes;
             ret = Math.max(ret, newPressure);
-            let newState: State = {...fillState(state), el: emptyPlayer(el), open: new Set([el.current.name, ...open]), 
+            let newState: State = { me, el: emptyPlayer(el), open: new Set([el.current.name, ...open]), 
                 pressure: newPressure, minute: newMinute, remainRate: remainRate - el.current.rate };
 
             if (openMe && me.current !== el.current) {
@@ -88,10 +90,6 @@ function run(content: string, minutes: number, withElephant: boolean) {
             for (let newMe of newMes) {
                 states.push({...newState, me: newMe });
             }
-        }
-
-        for (let newMe of newMes) for (let newEl of withElephant ? newEls : [el]) {
-            states.push({ me: newMe, el: newEl, open, pressure, minute: newMinute, remainRate });
         }
     }
     console.debug(ret);
