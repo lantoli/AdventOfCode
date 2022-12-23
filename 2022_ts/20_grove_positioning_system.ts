@@ -8,57 +8,61 @@ function run(content: string) {
     const lines = content.split('\n')
     lines.pop() // Remove last empty line
 
-    const list = lines.map(Number)
+    let list = lines.map(Number)
+    //list = list.slice(0, 10)
 
     // console.debug(list)
 
+
+
     const mod = list.length
+    // console.debug("mod", mod)
 
+    // console.debug("before", list)
     for (let n of [...list]) {
-        let current = list.indexOf(n)
-        // console.debug("index", idx, n)
-        n %= mod
-        if (n < 0) n += mod - 1
+        let idx = list.indexOf(n)
+        const dir = Math.sign(n)
+        const times = Math.abs(n % mod)
+        // console.debug("times", n, idx, dir, times)
 
-        let future = current + n
-        if (future >= mod) future -= mod - 1
+        for (let time = 0; time < times; time++) {
 
-        // if (future < 0) future += mod
-        
-        // console.debug(n, current, future, list)
+            let idxNext = idx + dir
 
-        const inc = Math.sign(future - current)
-        while (future != current) {
-            [ list[current], list[current + inc] ] = [ list[current + inc], list[current] ]
-            current += inc
-        }
+            // console.debug("time", time, idx, idxNext, list[idx], list[idxNext])
 
-        // console.debug("after", list)
-
-        /*
-        if (n < 0) n += mod - 1
-       //  console.debug("new", n)
-        for (let move = 0; move < n; move ++) {
-            const idxNext = (idx + 1) % mod
-
-            if (idxNext == 0) {
-                list.unshift(list.pop()!)
-              //  console.debug("skip", idx, idxNext, list)
-                move--
-            } else {
-                const temp = list[idxNext]
-                list[idxNext] = list[idx]
-                list[idx] = temp
-              //  console.debug("move", idx, idxNext, list)
+            if (idx == 0 && dir == -1) {
+                list.push(list.shift()!)
+                idx = mod - 1
+                idxNext = idx - 1
             }
+
+            if (idx == mod - 1 && dir == 1) {
+                list.unshift(list.pop()!)
+                idx = 0
+                idxNext = idx + 1
+            }
+
+            const temp = list[idxNext]
+            list[idxNext] = list[idx]
+            list[idx] = temp
+
             idx = idxNext
-            //[ list[idx], list[idxNext] ] = [ list[idxNext], list[idx] ]
+
         }
-        */
-     //   console.debug(n, list)
-     //   console.debug()
-        // break;
+
+        if (idx == 0 && dir == -1) {
+            list.push(list.shift()!)
+        }
+
+        if (idx == mod - 1 && dir == 1) {
+            list.unshift(list.pop()!)
+        }
+
+        // console.debug("middle", list)
+        //break;
     }
+    // console.debug("after", list)
 
     const idx0 = list.indexOf(0)
 
@@ -69,5 +73,5 @@ function run(content: string) {
 }
 
 run(sampleContent); // 3 (sample)
-run(inputContent); // 4827 too high -> too 4827
-
+run(inputContent); // 4827 too high -> otra vez 4827 (3201 + -6194 + 7820)
+// 11036 = 6830 +  -2575 +  6781 TOO HIGH
