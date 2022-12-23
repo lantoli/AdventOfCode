@@ -33,12 +33,36 @@ function getMonkeys(content: string) : Map<string, Monkey> {
     return map
 }
 
-function run(content: string) {
+function run1(content: string) {
     const map = getMonkeys(content)
     const root = map.get("root")!
     console.debug(getValue(map, root))
 }
 
-run(sampleContent); // 152 (sample)
-run(inputContent); // 194501589693264
+function run2(content: string) {
+    const map = getMonkeys(content)
+    const root = map.get("root")!
+    const [exp1, _op, exp2] = root.expr.split(" ")
+    const val2 = getValue(map, map.get(exp2)!)
+
+    const snapshot = new Map([...map.entries()].map(([name, monkey]) => [name, monkey.value]))
+
+    for (let num = 0; ; num ++) {
+        map.get("humn")!.value = num
+        if (getValue(map, map.get(exp1)!) === val2) {
+            console.debug(num)
+            return
+        }
+        if (num % 10_000 === 0) console.debug(num, val2, map.get(exp1)!.value)
+        for (const monkey of map.values()) monkey.value = snapshot.get(monkey.name)
+    }
+
+    // console.debug(exp1, exp2, getValue(map, map.get(exp1)!), getValue(map, map.get(exp2)!))
+}
+
+//run1(sampleContent); // 152 (sample)
+//run1(inputContent); // 194501589693264
+
+// run2(sampleContent); // 301 (sample)
+run2(inputContent); // 301 TOO LOW
 
