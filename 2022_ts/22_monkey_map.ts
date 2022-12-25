@@ -1,3 +1,4 @@
+// NOTE: Part 1 is not working yet
 import { readFileSync } from 'fs'
 
 const inputContent = readFileSync("inputs/22_input.txt", 'utf-8')
