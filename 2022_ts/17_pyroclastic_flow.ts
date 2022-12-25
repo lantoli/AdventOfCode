@@ -1,3 +1,6 @@
+// NOTE: Part 2 takes 3 days, I couldn't find the modulus / repeating logic. 
+// TODO: find good solution for part 2
+
 import { readFileSync } from 'fs'
 
 const inputContent = readFileSync("inputs/17_input.txt", 'utf-8')
@@ -29,12 +32,9 @@ const highestRock = (board: number[]): number => {
     throw new Error("shouldnt happen")
 }
 
-function sameRows(board: number[], y1: number, y2: number, count: number) : boolean {
-    for (let y = 0; y < count; y++) if (board[y1 + y] !== board[y2 + y]) return false
-    return true
-}
-
 function run(content: string, rocks: number) {
+
+    const start = new Date().getTime();
 
     const lines = content.split('\n')
     lines.pop() // Remove last empty line
@@ -46,7 +46,7 @@ function run(content: string, rocks: number) {
 
     let highestPos = 0
     
-    const safetyKeep = 1_000, safetyLimit = 1_000_000
+    const safetyKeep = 1_000, safetyLimit = 10_000_000
         
     for (let count = 0, shapeIndex = 0; count < rocks; count++, shapeIndex = (shapeIndex + 1) % shapes.length) {
 
@@ -59,11 +59,11 @@ function run(content: string, rocks: number) {
         const shape  = shapes[shapeIndex]
         const highest = highestRock(board)
 
-        /*
+        // if (count % 1_000_000 == 0) {
         if (count % 1_000_000_000 == 0) {
-            console.debug(count, highest + highestPos)
+            let elapsed = Math.floor((new Date().getTime() - start) / 1000 / 60);
+            console.debug(elapsed, Math.floor(1_000_000_000_000 / count), count, highest + highestPos)
         }
-        */
 
         let ypos = highest + 3 + shape.length
         let xpos = 2
@@ -99,7 +99,7 @@ function run(content: string, rocks: number) {
 
     //const mod = moves.length * 5;
 
-    
+    /*
     const mod = 7136912 //  53, 2862, 151739   SAMPLE: 2671,    7136912
     let lastMod = mod
     const ini = 2000
@@ -115,7 +115,8 @@ function run(content: string, rocks: number) {
         console.debug("FOUND", lastMod)
         return board;
     }
-    
+    */
+
 
     //for (let y = 300; y < 30000; y += 200) console.debug(y, board[y])
 
@@ -123,13 +124,6 @@ function run(content: string, rocks: number) {
     //console.debug(highestRock(board) + highestPos)
     // return board;
 }
-
-//run(sampleContent, 2022) // 3068 (sample)
-//run(sampleContent, 1_000_000_000_000) // 1514285714288 (sample)
-
-//run(sampleContent, 1_000_000) // 1514285714288 (sample)
-//run(inputContent, 10_000_000) // PROBANDO
-
 
 /*
 const mod = 200 // 53 // 151739 // 2862 // 53
@@ -275,9 +269,6 @@ console.debug(run(inputContent, 10_000_000))
 
 //const mod = 1 //  53, 2862, 151739   SAMPLE: 2671,    7136912
 
-// run(sampleContent, 2022) // 3068 (sample)
-// run(inputContent, 2022) // 3215
-
 /*
 let prev = run(inputContent, 100_000)
 for (let i = 1; i < 200; i++) {
@@ -287,4 +278,10 @@ for (let i = 1; i < 200; i++) {
 }
 */
 
-// run(inputContent, 100_000_000) // ...
+
+
+console.debug(run(sampleContent, 2022)) // 3068 (sample)
+console.debug(run(inputContent, 2022)) // 3215
+
+console.debug(run(sampleContent, 100_000_000)) // 1514285714288 (sample)
+console.debug(run(inputContent, 1_000_000_000_000)) // 1575811209487
