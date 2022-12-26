@@ -1,4 +1,5 @@
-// Part 1 not working yet
+// Part 2 not working yet
+// Use export NODE_OPTIONS="--max-old-space-size=8192"
 import { readFileSync } from 'fs'
 
 const inputContent = readFileSync("inputs/19_input.txt", 'utf-8')
@@ -10,7 +11,8 @@ const len = Object.keys(res).length / 2
 type State = {
   resources: number[],
   robots: number[],
-  minute: number
+  minute: number,
+  bad: boolean
 }
 
 const minutes = 24
@@ -35,61 +37,77 @@ function getGeodes(robotCost: number[][]): number {
   const resources = new Array(len).fill(0)
   const robots = new Array(len).fill(0)
   robots[res.ore] = 1
-  const states: State[] = [ {resources, robots, minute: 0 } ]
+  const states: State[] = [ {resources, robots, minute: 0, bad: false } ]
   let maxGeodes = 0
-  let maxTime = 0
-
-  const visited = new Set<string>()
+  // let maxTime = 0
   let count = 0
-  let discard = 0
+  const visited = new Map<string, State>()
+
+  let diffMinus = 0, diffZero = 0, diffPlus = 0
 
   while (states.length > 0) {
-    const state = states.shift()!
+    const state = states.pop()!
+    if (state.bad) continue
     count++
-    //console.debug("state", state, "remaining", states)
+    // console.debug("state", state, "remaining", states)
     let { resources, robots, minute } = state
-    if (minute > minutes) continue
-
-    if (robots[res.geode] == 0 && maxGeodes - resources[res.geode] > minutes - minute ) {
-      discard++
-      continue
+    
+//    if (minute > minutes) continue
+    
+    let key = robots.join(",") + ":" + resources.join(",")
+    const v = visited.get(key)
+    if (typeof v !== "undefined"){
+      const diff = state.minute - v.minute
+      if (diff === 0) diffZero++; else if (diff < 0) diffMinus++; else diffPlus++
+      //if (diff < 0) console.debug(diff , "visited", key, visited.get(key), state)
+      count++
+      if (diff >= 0) continue; else v.bad = true
     }
+    visited.set(key, state)
 
-    let ser = resources.join(",") + "-" + robots.join(",")
-    if (visited.has(ser)) continue
-    visited.add(ser)
-    minute++
-    if (minute > maxTime) {
-      maxTime = minute
-      console.debug("maxTime", maxTime, "visited", visited.size, "count", count, "discard", discard)
-    }
+
     for (let i = 0; i < len; i++) {
-      const newResources = [...resources]
-      let buy = true
-      for (let j = 0; j < len; j++) {
-        if ((newResources[j] -= robotCost[i][j]) < 0) buy = false
+      let rounds = 0
+      for (let j = 0; j < len; j++)  {
+        const cost = robotCost[i][j];
+        if (resources[j] < cost) {
+          if (robots[j] > 0) {
+            rounds = Math.max(rounds, Math.ceil((cost - resources[j]) / robots[j]))
+          } else {
+            rounds = Infinity
+          }
+        }
       }
-      if (buy) {
-        const newRobots = [...robots]
-        newRobots[i]++
-        for (let i = 0; i < len; i++) newResources[i] += robots[i]
-        const newState = { resources: newResources, robots: newRobots, minute }
-        states.push(newState) 
-        //console.debug("buying", newState, "states", states)
+      // console.debug(`will build ${i} in ${rounds} rounds`)
+      if (Number.isFinite(rounds)) {
+        rounds++
+        const newMinute = minute + rounds
+        if (newMinute < minutes) {
+          const newRobots = [...robots]
+          newRobots[i]++
+          const newResources = [...resources]
+          for (let j = 0; j < len; j++) {
+            newResources[j] += rounds * robots[j] - robotCost[i][j]
+          }
+          const newState = { resources: newResources, robots: newRobots, minute: newMinute, bad: false }
+          // console.debug("new state", newState)
+          states.push(newState)
+          if (maxGeodes < newRobots[res.geode]) {
+            maxGeodes = newRobots[res.geode]
+            console.debug("maxGeodes1", maxGeodes)
+          }
+        } else {
+          const remaining = minutes - minute
+          const geodes = resources[res.geode] + remaining * robots[res.geode]
+          if (maxGeodes < geodes) {
+            maxGeodes = geodes
+            console.debug("maxGeodes2", maxGeodes,resources[res.geode], robots[res.geode], "time", minutes, minute, remaining)
+          } 
+        } 
       }
-      //console.debug("buy", buy, i)
     }
-
-    const newResources = [...state.resources]
-    for (let i = 0; i < len; i++) newResources[i] += robots[i]
-    if (resources[res.geode] > maxGeodes) {
-      maxGeodes = resources[res.geode]
-      console.debug("maxGeodes", maxGeodes, "visited", visited.size, "count", count, "discard", discard)
-    }
-    //maxGeodes = Math.max(maxGeodes, resources[res.geode])
-    states.push({ resources: newResources, robots, minute })
-
   }
+  // console.debug("DIFFS", diffMinus, diffZero, diffPlus)
   
   return maxGeodes
 }
@@ -98,14 +116,18 @@ function run(content: string) {
     const lines = content.split('\n')
     lines.pop() // Remove last empty line
 
-    const robotCost = lines.slice(0, 1).map(robotCostFromBlueprint)
-    const geodes = robotCost.map(getGeodes)
-    const ret = geodes.map((geode, idx) => (idx + 1) * geode).reduce((a, b) => a + b, 0)
-
-    console.debug(geodes)
+    let ret = 0
+    let idx = 1
+    for (let robotCost of lines.map(robotCostFromBlueprint)) {
+      const geodes = getGeodes(robotCost)
+      ret += geodes * idx
+      idx++
+      console.debug(geodes)
+    }    
     console.debug(ret)
   }
 
-run(sampleContent); // 33 (sample)
-// run(inputContent); // ...
+//run(sampleContent); // 33 (sample)
+ run(inputContent); // 1616
+ 
 
