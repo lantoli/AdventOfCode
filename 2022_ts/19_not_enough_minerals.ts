@@ -1,5 +1,5 @@
 // Part 2 not working yet
-// Use export NODE_OPTIONS="--max-old-space-size=8192"
+// Use: export NODE_OPTIONS="--max-old-space-size=8192"
 import { readFileSync } from 'fs'
 
 const inputContent = readFileSync("inputs/19_input.txt", 'utf-8')
@@ -116,18 +116,15 @@ function run(content: string) {
     const lines = content.split('\n')
     lines.pop() // Remove last empty line
 
-    let ret = 0
-    let idx = 1
-    for (let robotCost of lines.map(robotCostFromBlueprint)) {
-      const geodes = getGeodes(robotCost)
-      ret += geodes * idx
-      idx++
-      console.debug(geodes)
-    }    
+    const robotCost = lines.map(robotCostFromBlueprint)
+    const geodes = robotCost.map(getGeodes)
+    const ret = geodes.map((geode, idx) => (idx + 1) * geode).reduce((a, b) => a + b, 0)
+
+    console.debug(geodes)
     console.debug(ret)
   }
 
 //run(sampleContent); // 33 (sample)
  run(inputContent); // 1616
- 
+
 
