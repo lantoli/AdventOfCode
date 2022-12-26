@@ -9,10 +9,25 @@ enum res { ore, clay, obsidian, geode }
 const len = Object.keys(res).length / 2
 
 type State = {
-  resources: number[],
-  robots: number[],
+  resourcesNumber: number,
+  robotsNumber: number,
   minute: number,
   bad: boolean
+}
+
+const mod = 1000
+const mod4 = mod * mod * mod * mod
+
+function fromTuple([a, b, c, d]: number[]): number {
+  return (a * mod * mod * mod + b * mod * mod + c * mod + d)
+}
+
+function toTuple(n: number): number[] {
+  const a = Math.floor(n / (mod * mod * mod))
+  const b = Math.floor(n / (mod * mod)) % mod
+  const c = Math.floor(n / mod) % mod
+  const d = n % mod
+  return [a, b, c, d]
 }
 
 function robotCostFromBlueprint(line: string): number[][] {
@@ -35,11 +50,11 @@ function getGeodes(robotCost: number[][], minutes: number): number {
   const resources = new Array(len).fill(0)
   const robots = new Array(len).fill(0)
   robots[res.ore] = 1
-  const states: State[] = [ {resources, robots, minute: 0, bad: false } ]
+  const states: State[] = [ {resourcesNumber: 0, robotsNumber: fromTuple([1, 0, 0, 0]), minute: 0, bad: false } ]
   let maxGeodes = 0
   // let maxTime = 0
   let count = 0
-  const visited = new Map<string, State>()
+  const visited = new Map<number, State>()
 
   let diffMinus = 0, diffZero = 0, diffPlus = 0
 
@@ -48,11 +63,12 @@ function getGeodes(robotCost: number[][], minutes: number): number {
     if (state.bad) continue
     count++
     // console.debug("state", state, "remaining", states)
-    let { resources, robots, minute } = state
-    
+    let { resourcesNumber, robotsNumber, minute } = state
+    let resources = toTuple(resourcesNumber)
+    let robots = toTuple(robotsNumber)
 //    if (minute > minutes) continue
     
-    let key = robots.join(",") + ":" + resources.join(",")
+    let key = robotsNumber * mod4 + resourcesNumber
     const v = visited.get(key)
     if (typeof v !== "undefined"){
       const diff = state.minute - v.minute
@@ -87,7 +103,7 @@ function getGeodes(robotCost: number[][], minutes: number): number {
           for (let j = 0; j < len; j++) {
             newResources[j] += rounds * robots[j] - robotCost[i][j]
           }
-          const newState = { resources: newResources, robots: newRobots, minute: newMinute, bad: false }
+          const newState = { resourcesNumber: fromTuple(newResources), robotsNumber: fromTuple(newRobots), minute: newMinute, bad: false }
           // console.debug("new state", newState)
           states.push(newState)
           if (maxGeodes < newRobots[res.geode]) {
@@ -122,7 +138,7 @@ function run(content: string, minutes: number) {
     console.debug(ret)
   }
 
-// run(sampleContent, 24); // 33 (sample)
-run(inputContent, 24); // 1616
+run(sampleContent, 24); // 33 (sample)
+//run(inputContent, 24); // 1616
 
 
