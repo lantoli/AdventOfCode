@@ -15,8 +15,6 @@ type State = {
   bad: boolean
 }
 
-const minutes = 24
-
 function robotCostFromBlueprint(line: string): number[][] {
   const oreRobot = line.match(/Each ore robot costs (\d+) ore./)!
   const clayRobot = line.match(/Each clay robot costs (\d+) ore./)!
@@ -33,7 +31,7 @@ function robotCostFromBlueprint(line: string): number[][] {
   return robots
 }
 
-function getGeodes(robotCost: number[][]): number {
+function getGeodes(robotCost: number[][], minutes: number): number {
   const resources = new Array(len).fill(0)
   const robots = new Array(len).fill(0)
   robots[res.ore] = 1
@@ -112,19 +110,19 @@ function getGeodes(robotCost: number[][]): number {
   return maxGeodes
 }
 
-function run(content: string) {
+function run(content: string, minutes: number) {
     const lines = content.split('\n')
     lines.pop() // Remove last empty line
 
     const robotCost = lines.map(robotCostFromBlueprint)
-    const geodes = robotCost.map(getGeodes)
+    const geodes = robotCost.map(cost => getGeodes(cost, minutes))
     const ret = geodes.map((geode, idx) => (idx + 1) * geode).reduce((a, b) => a + b, 0)
 
     console.debug(geodes)
     console.debug(ret)
   }
 
-//run(sampleContent); // 33 (sample)
- run(inputContent); // 1616
+// run(sampleContent, 24); // 33 (sample)
+run(inputContent, 24); // 1616
 
 
