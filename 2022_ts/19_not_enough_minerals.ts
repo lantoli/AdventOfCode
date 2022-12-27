@@ -41,12 +41,9 @@ function robotCostFromBlueprint(line: string): number[][] {
 }
 
 function getGeodes(robotCost: number[][], minutes: number): number {
-  const resources = new Array(len).fill(0)
-  const robots = new Array(len).fill(0)
-  robots[res.ore] = 1
   const states: State[] = [ {resourcesNumber: 0, robotsNumber: fromTuple([1, 0, 0, 0]), minute: 0 } ]
-  let maxGeodes = 0
   const visited = new Map<number, State>()
+  let maxGeodes = 0
 
   while (states.length > 0) {
     const state = states.pop()!
