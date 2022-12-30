@@ -33,8 +33,14 @@ function run(content: string) {
             for (let move = 0; move < moves; move++) {
               let yend = y + yinc
               let xend = x + xinc
-              if (yend == -1) yend = board.length - 1
-              if (yend == board.length) yend = 0
+              if (yend == -1) {
+                yend = board.length - 1
+                while (xend >= board[yend].length) yend--;
+              }
+              if (yend == board.length) {
+                yend = 0
+                while (xend >= board[yend].length) yend++;
+              }
               if (xend == -1) xend = board[yend].length - 1
               if (xend == board[yend].length) xend = 0
               // console.debug("move ini", move, y, x, yend, xend, board[yend][xend], board[yend].length)
@@ -50,14 +56,13 @@ function run(content: string) {
               if (board[yend][xend] === '#') break;
               y = yend; x = xend
             }
-            console.debug("moves", moves, y, x)
+            console.debug("moves", moves, "coord", y+1, x+1)
             // console.debug("pos", y, x)
         }
     }
 
-    console.debug(1000 * (y+1) + 4 * (x+1) + dir)
+    console.debug(y+1, x+1, dir, 1000 * (y+1) + 4 * (x+1) + dir)
   }
 
-run(sampleContent); // 6032 (sample)
-// run(inputContent); // 179210   too high 
-
+//run(sampleContent); // 6032 (sample)
+run(inputContent); // 179210
