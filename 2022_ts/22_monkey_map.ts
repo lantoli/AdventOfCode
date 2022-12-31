@@ -46,47 +46,51 @@ function wrapSample(info: Info, size: number) : Info {
 
 function wrapInput(info: Info, size: number) : Info {
   const { dir, ycube, xcube, yposcube, xposcube } = info
-  if (ycube == 3 && xcube == 1 && yposcube == size - 1 && dir === 3)
-    return { dir: 0, ycube: 3, xcube: 0, yposcube: xposcube, xposcube: 0 }
+  const reverse = (x: number) => size - x - 1
+  const opposite = (x: number) => x === 0 ? border : x === border ? 0 : Number.NaN
+  const border = size - 1
 
-  if (ycube == 2 && xcube == 2 && xposcube == size - 1 && dir === 2)
-    return { dir: 0, ycube: 0, xcube: 1, yposcube: size - yposcube - 1, xposcube: 0 }
+  if (ycube == 3 && xcube == 1 && yposcube == border && dir == 3)
+    return { dir: 0, ycube: 3, xcube: 0, yposcube: xposcube, xposcube: opposite(yposcube) }
 
-  if (ycube == 0 && xcube == 0 && xposcube == size - 1 && dir === 2)
-    return { dir: 0, ycube: 2, xcube: 0, yposcube: size - yposcube - 1, xposcube: 0 }
+  if (ycube == 2 && xcube == 2 && xposcube == border && dir == 2)
+    return { dir: 0, ycube: 0, xcube: 1, yposcube: reverse(yposcube), xposcube: opposite(xposcube) }
 
-  if (ycube == 1 && xcube == 0 && yposcube == size - 1 && dir === 3)
-    return { dir: 0, ycube: 1, xcube: 1, yposcube: xposcube, xposcube: 0 }
+  if (ycube == 0 && xcube == 0 && xposcube == border && dir == 2)
+    return { dir: 0, ycube: 2, xcube: 0, yposcube: reverse(yposcube), xposcube: reverse(xposcube) }
 
-  if (ycube == 1 && xcube == 0 && xposcube == size - 1 && dir === 2)
-    return { dir: 1, ycube: 2, xcube: 0, yposcube: 0, xposcube: yposcube }
+  if (ycube == 1 && xcube == 0 && yposcube == border && dir == 3)
+    return { dir: 0, ycube: 1, xcube: 1, yposcube: xposcube, xposcube: reverse(yposcube) }
 
-  if (ycube == 1 && xcube == 2 && xposcube == 0 && dir === 0)
-    return { dir: 3, ycube: 0, xcube: 2, yposcube: size - 1, xposcube: yposcube }
+  if (ycube == 1 && xcube == 0 && xposcube == border && dir == 2)
+    return { dir: 1, ycube: 2, xcube: 0, yposcube: reverse(xposcube), xposcube: yposcube }
 
-  if (ycube == 1 && xcube == 2 && yposcube == 0 && dir === 1)
-    return { dir: 2, ycube: 1, xcube: 1, yposcube: xposcube, xposcube: size - 1 }
+  if (ycube == 1 && xcube == 2 && xposcube == 0 && dir == 0)
+    return { dir: 3, ycube: 0, xcube: 2, yposcube: reverse(xposcube), xposcube: yposcube }
 
-  if (ycube == 3 && xcube == 2 && yposcube == size - 1 && dir === 3)
-    return { dir, ycube: 3, xcube: 0, yposcube, xposcube}
+  if (ycube == 1 && xcube == 2 && yposcube == 0 && dir == 1)
+    return { dir: 2, ycube: 1, xcube: 1, yposcube: xposcube, xposcube: reverse(yposcube) }
 
-  if (ycube == 3 && xcube == 2 && xposcube == size - 1 && dir === 2)
-    return { dir: 1, ycube: 0, xcube: 1, yposcube: 0, xposcube: yposcube }
+  if (ycube == 3 && xcube == 2 && yposcube == border && dir == 3)
+    return { dir, ycube: 3, xcube: reverse(yposcube), yposcube, xposcube}
 
-  if (ycube == 3 && xcube == 1 && yposcube == 0 && dir === 1)
-    return { dir: 2, ycube: 3, xcube: 0, yposcube: xposcube, xposcube: size - 1 }
+  if (ycube == 3 && xcube == 2 && xposcube == border && dir == 2)
+    return { dir: 1, ycube: 0, xcube: 1, yposcube: reverse(xposcube), xposcube: yposcube }
 
-  if (ycube == 2 && xcube == 2 && xposcube == 0 && dir === 0)
-    return { dir: 2, ycube: 0, xcube: 2, yposcube: size - yposcube - 1, xposcube: size - 1 }
+  if (ycube == 3 && xcube == 1 && yposcube == 0 && dir == 1)
+    return { dir: 2, ycube: 3, xcube: 0, yposcube: xposcube, xposcube: reverse(yposcube) }
 
-  if (ycube == 0 && xcube == 0 && yposcube == 0 && dir === 1)
+  if (ycube == 2 && xcube == 2 && xposcube == 0 && dir == 0)
+    return { dir: 2, ycube: 0, xcube: 2, yposcube: reverse(yposcube), xposcube: reverse(xposcube) }
+
+  if (ycube == 0 && xcube == 0 && yposcube == 0 && dir == 1)
     return { dir, ycube: 0, xcube: 2, yposcube, xposcube }
 
-  if (ycube == 3 && xcube == 1 && xposcube == 0 && dir === 0)
-    return { dir: 3, ycube: 2, xcube: 1, yposcube: size - 1, xposcube: yposcube }
+  if (ycube == 3 && xcube == 1 && xposcube == 0 && dir == 0)
+    return { dir: 3, ycube: 2, xcube: 1, yposcube: reverse(xposcube), xposcube: yposcube }
     
-  if (ycube == 0 && xcube == 0 && xposcube == 0 && dir === 0)
-    return { dir: 2, ycube: 2, xcube: 1, yposcube: size - yposcube - 1, xposcube: size - 1 }
+  if (ycube == 0 && xcube == 0 && xposcube == 0 && dir == 0)
+    return { dir: 2, ycube: 2, xcube: 1, yposcube: reverse(yposcube), xposcube: reverse(xposcube) }
 
   throw new Error("Wrapping not supported")
 }
@@ -114,12 +118,10 @@ function run(content: string, size: number, wrap?: (info: Info, size: number) =>
           if (x == cols) { x = 0; overflow = true }
 
           if (typeof wrap !== "undefined") {
-            let ycube = Math.floor(y / size), xcube = Math.floor(x / size)
-            let yposcube = y % size, xposcube = x % size
+            const ycube = Math.floor(y / size), xcube = Math.floor(x / size)
+            const yposcube = y % size, xposcube = x % size
 
-            if ( (overflow || grid[y][x] === ' ') && 
-                 (yposcube === 0 || yposcube === size - 1 || xposcube === 0 || xposcube === size - 1 ) ) {
-
+            if (overflow || grid[y][x] === ' ')  {
               const info = wrap({ dir, ycube, xcube, yposcube, xposcube }, size)
               y = info.ycube * size + info.yposcube
               x = info.xcube * size + info.xposcube
@@ -127,7 +129,6 @@ function run(content: string, size: number, wrap?: (info: Info, size: number) =>
             }
             assert (grid[y][x] !== ' ')
           }
-
         } while (grid[y][x] === ' ')
         if (grid[y][x] === '#') break
       }
