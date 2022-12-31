@@ -6,9 +6,12 @@ import assert from 'assert';
 const inputContent = readFileSync("inputs/22_input.txt", 'utf-8')
 const sampleContent = readFileSync("inputs/22_sample.txt", 'utf-8')
 
-type Info = { dir: number, ycube: number, xcube: number, yposcube: number, xposcube:number }
+type Move = { dir: number, ycube: number, xcube: number, ypos: number, xpos:number }
 
+const right = 0, down = 1, left = 2, up = 3
 const incs = [ [0, 1], [1, 0], [0, -1], [-1, 0]  ];
+
+const pwd = (y: number, x: number, dir: number) => 1000 * (y+1) + 4 * (x+1) + dir
 
 function getBoard(content: string, size: number) {
   const lines = content.split('\n')
@@ -30,72 +33,53 @@ function getBoard(content: string, size: number) {
   return { grid, faceRows, faceCols, rows, cols, path }
 }
 
-function wrapSample(info: Info, size: number) : Info {
-  const { dir, ycube, xcube, yposcube, xposcube } = info
-  if (ycube == 1 && xcube == 3 && xposcube == 0 && dir === 0)
-    return { dir: 1, ycube: ycube + 1, xcube, yposcube: xposcube, xposcube: size - yposcube - 1 }
+function wrapSample(m: Move, size: number) : Move {
+  const { dir, ycube, xcube, ypos, xpos } = m
+  if (ycube == 1 && xcube == 3 && xpos == 0 && dir === 0)
+    return { dir: 1, ycube: ycube + 1, xcube, ypos: xpos, xpos: size - ypos - 1 }
   
-  if (ycube == 0 && xcube == 2 && yposcube == 0 && dir == 1) 
-    return { dir: 3, ycube: ycube + 1, xcube: 0, yposcube: size - 1, xposcube: size - xposcube - 1 }
+  if (ycube == 0 && xcube == 2 && ypos == 0 && dir == 1) 
+    return { dir: 3, ycube: ycube + 1, xcube: 0, ypos: size - 1, xpos: size - xpos - 1 }
 
-  if (ycube == 0 && xcube == 1 && yposcube == size - 1 && dir == 3) 
-    return { dir: 0, ycube, xcube: xcube + 1, yposcube: xposcube, xposcube: 0 }
-
-    throw new Error("Wrapping not supported")
-}
-
-function wrapInput(info: Info, size: number) : Info {
-  const { dir, ycube, xcube, yposcube, xposcube } = info
-  const reverse = (x: number) => size - x - 1
-  const opposite = (x: number) => x === 0 ? border : x === border ? 0 : Number.NaN
-  const border = size - 1
-
-  if (ycube == 3 && xcube == 1 && yposcube == border && dir == 3)
-    return { dir: 0, ycube: 3, xcube: 0, yposcube: xposcube, xposcube: opposite(yposcube) }
-
-  if (ycube == 2 && xcube == 2 && xposcube == border && dir == 2)
-    return { dir: 0, ycube: 0, xcube: 1, yposcube: reverse(yposcube), xposcube: opposite(xposcube) }
-
-  if (ycube == 0 && xcube == 0 && xposcube == border && dir == 2)
-    return { dir: 0, ycube: 2, xcube: 0, yposcube: reverse(yposcube), xposcube: reverse(xposcube) }
-
-  if (ycube == 1 && xcube == 0 && yposcube == border && dir == 3)
-    return { dir: 0, ycube: 1, xcube: 1, yposcube: xposcube, xposcube: reverse(yposcube) }
-
-  if (ycube == 1 && xcube == 0 && xposcube == border && dir == 2)
-    return { dir: 1, ycube: 2, xcube: 0, yposcube: reverse(xposcube), xposcube: yposcube }
-
-  if (ycube == 1 && xcube == 2 && xposcube == 0 && dir == 0)
-    return { dir: 3, ycube: 0, xcube: 2, yposcube: reverse(xposcube), xposcube: yposcube }
-
-  if (ycube == 1 && xcube == 2 && yposcube == 0 && dir == 1)
-    return { dir: 2, ycube: 1, xcube: 1, yposcube: xposcube, xposcube: reverse(yposcube) }
-
-  if (ycube == 3 && xcube == 2 && yposcube == border && dir == 3)
-    return { dir, ycube: 3, xcube: reverse(yposcube), yposcube, xposcube}
-
-  if (ycube == 3 && xcube == 2 && xposcube == border && dir == 2)
-    return { dir: 1, ycube: 0, xcube: 1, yposcube: reverse(xposcube), xposcube: yposcube }
-
-  if (ycube == 3 && xcube == 1 && yposcube == 0 && dir == 1)
-    return { dir: 2, ycube: 3, xcube: 0, yposcube: xposcube, xposcube: reverse(yposcube) }
-
-  if (ycube == 2 && xcube == 2 && xposcube == 0 && dir == 0)
-    return { dir: 2, ycube: 0, xcube: 2, yposcube: reverse(yposcube), xposcube: reverse(xposcube) }
-
-  if (ycube == 0 && xcube == 0 && yposcube == 0 && dir == 1)
-    return { dir, ycube: 0, xcube: 2, yposcube, xposcube }
-
-  if (ycube == 3 && xcube == 1 && xposcube == 0 && dir == 0)
-    return { dir: 3, ycube: 2, xcube: 1, yposcube: reverse(xposcube), xposcube: yposcube }
-    
-  if (ycube == 0 && xcube == 0 && xposcube == 0 && dir == 0)
-    return { dir: 2, ycube: 2, xcube: 1, yposcube: reverse(yposcube), xposcube: reverse(xposcube) }
+  if (ycube == 0 && xcube == 1 && ypos == size - 1 && dir == 3) 
+    return { dir: 0, ycube, xcube: xcube + 1, ypos: xpos, xpos: 0 }
 
   throw new Error("Wrapping not supported")
 }
 
-function run(content: string, size: number, wrap?: (info: Info, size: number) => Info) {
+function wrapInput(m: Move, size: number) : Move {
+  const { dir, ycube, xcube, ypos, xpos } = m
+  const reverse = (x: number) => size - x - 1
+  const opposite = (x: number) => x === 0 ? border : x === border ? 0 : Number.NaN
+  const border = size - 1
+  const dirL = { dir: (dir + 3) % 4, xcube, ypos: reverse(xpos), xpos: ypos }
+  const dirR = { dir: (dir + 1) % 4, ycube, ypos: xpos, xpos: reverse(ypos) }
+  const dir180 = { dir: (dir + 2) % 4, ypos: reverse(ypos), xpos: reverse(xpos) }
+
+  switch(pwd(ycube, xcube, dir)) {
+    case pwd(3, 2, up   ): return { ...m, xcube: 0 }
+    case pwd(0, 0, down ): return { ...m, xcube: 2 }
+
+    case pwd(3, 1, right): return { ...dirL, ycube: 2 }
+    case pwd(1, 0, left ): return { ...dirL, ycube: 2 } 
+    case pwd(1, 2, right): return { ...dirL, ycube: 0 }
+    case pwd(3, 2, left ): return { ...dirL, ycube: 0 } 
+
+    case pwd(3, 1, up   ): return { ...dirR, xcube: 0, xpos: opposite(ypos) }
+    case pwd(3, 1, down ): return { ...dirR, xcube: 0 }
+    case pwd(1, 0, up   ): return { ...dirR, xcube: 1 }
+    case pwd(1, 2, down ): return { ...dirR, xcube: 1 }
+
+    case pwd(2, 2, left ): return { ...dir180, ycube: 0, xcube: 1, xpos: opposite(xpos) } 
+    case pwd(2, 2, right): return { ...dir180, ycube: 0, xcube: 2 } 
+    case pwd(0, 0, left ): return { ...dir180, ycube: 2, xcube: 0 } 
+    case pwd(0, 0, right): return { ...dir180, ycube: 2, xcube: 1 } 
+    
+    default: throw new Error("Wrapping not supported")
+  }
+}
+
+function run(content: string, size: number, wrap?: (m: Move, size: number) => Move) {
   const { grid, faceRows, faceCols, rows, cols, path } = getBoard(content, size)
   let ylast = 0, xlast = grid[0].indexOf('.'), dirlast = 0 // DEJAR ESTE
 
@@ -106,8 +90,6 @@ function run(content: string, size: number, wrap?: (info: Info, size: number) =>
       for (var moves = 0; i < path.length && path[i] !== 'L' && path[i] !== 'R'; i++) {
         moves = moves * 10 + path[i].charCodeAt(0) - '0'.charCodeAt(0)
       }
-
-      const dirborrar = dirlast, xborrar = xlast, yborrar = ylast
       for (let move = 0, y = ylast, x = xlast, dir = dirlast; move < moves; move++, ylast = y, xlast = x, dirlast = dir) {
         do {
           y += incs[dir][0]; x += incs[dir][1]
@@ -119,12 +101,12 @@ function run(content: string, size: number, wrap?: (info: Info, size: number) =>
 
           if (typeof wrap !== "undefined") {
             const ycube = Math.floor(y / size), xcube = Math.floor(x / size)
-            const yposcube = y % size, xposcube = x % size
+            const ypos = y % size, xpos = x % size
 
             if (overflow || grid[y][x] === ' ')  {
-              const info = wrap({ dir, ycube, xcube, yposcube, xposcube }, size)
-              y = info.ycube * size + info.yposcube
-              x = info.xcube * size + info.xposcube
+              const info = wrap({ dir, ycube, xcube, ypos, xpos }, size)
+              y = info.ycube * size + info.ypos
+              x = info.xcube * size + info.xpos
               dir = info.dir
             }
             assert (grid[y][x] !== ' ')
@@ -134,7 +116,7 @@ function run(content: string, size: number, wrap?: (info: Info, size: number) =>
       }
       break;
   }
-  console.debug(1000 * (ylast+1) + 4 * (xlast+1) + dirlast)
+  console.debug(pwd(ylast, xlast, dirlast))
 }
 
 run(sampleContent, 4);                // 6032 (sample)
