@@ -32,15 +32,13 @@ function run(content: string, size: number) {
   const { grid, faceRows, faceCols, rows, cols, path } = getBoard(content, size)
   let y = 0, x = grid[0].indexOf('.'), dir = 0
 
-  for (let i = 0; i < path.length; i++) switch(path[i]) {
-    case 'L': dir = (dir + 3) % 4; break;
-    case 'R': dir = (dir + 1) % 4; break;
+  for (let i = 0; i < path.length; ) switch(path[i]) {
+    case 'L': dir = (dir + 3) % 4; i++; break;
+    case 'R': dir = (dir + 1) % 4; i++; break;
     default: 
-      let moves = 0
-      while (i < path.length && path[i] !== 'L' && path[i] !== 'R') {
-        moves = moves * 10 + path[i++].charCodeAt(0) - '0'.charCodeAt(0)
+      for (var moves = 0; i < path.length && path[i] !== 'L' && path[i] !== 'R'; i++) {
+        moves = moves * 10 + path[i].charCodeAt(0) - '0'.charCodeAt(0)
       }
-      i--
       for (let move = 0, yend = y, xend = x; move < moves; move++, y = yend, x = xend) {
         // console.debug("move ini", move, y, x, yend, xend, board[yend][xend])
         do {
