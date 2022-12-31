@@ -83,8 +83,8 @@ function wrapInput(info: Info, size: number) : Info | undefined {
     return { dir, ycube: 0, xcube: 2, yposcube, xposcube }
 
   if (ycube == 3 && xcube == 1 && xposcube == 0 && dir === 0)
-    return { dir: 1, ycube: 0, xcube: 2, yposcube: 0, xposcube: size - xposcube - 1 }
-
+    return { dir: 3, ycube: 2, xcube: 1, yposcube: size - 1, xposcube: yposcube }
+    
   if (ycube == 0 && xcube == 0 && xposcube == 0 && dir === 0)
     return { dir: 2, ycube: 2, xcube: 1, yposcube: size - yposcube - 1, xposcube: size - 1 }
 
@@ -106,7 +106,7 @@ function run(content: string, size: number, wrap?: (info: Info, size: number) =>
         moves = moves * 10 + path[i].charCodeAt(0) - '0'.charCodeAt(0)
       }
 
-      console.debug("last i", i, path.length)
+      //console.debug("last i", i, path.length)
 
       const dirborrar = dirlast, xborrar = xlast, yborrar = ylast
       for (let move = 0, y = ylast, x = xlast, dir = dirlast; move < moves; move++, ylast = y, xlast = x, dirlast = dir) {
@@ -152,8 +152,7 @@ function run(content: string, size: number, wrap?: (info: Info, size: number) =>
   console.debug(ylast+1, xlast+1, dirlast, 1000 * (ylast+1) + 4 * (xlast+1) + dirlast)
 }
 
-// run(sampleContent, 4); // 6032 (sample)
-// run(inputContent, 50); // 109094
-
-// run(sampleContent, 4, wrapSample); // 5031 (sample) PART 2
-run(inputContent, 50, wrapInput); // 150242 (150 60 2) TO HIGH  PART 2
+run(sampleContent, 4);                // 6032 (sample)
+run(sampleContent, 4, wrapSample);    // 5031 (sample)
+run(inputContent, 50);                // 109094
+run(inputContent, 50, wrapInput);     // 53324
