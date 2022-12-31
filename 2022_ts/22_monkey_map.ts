@@ -1,68 +1,67 @@
-// NOTE: Part 1 is not working yet
+// Part 2 not done yet
 import { readFileSync } from 'fs'
+import assert from 'assert';
 
 const inputContent = readFileSync("inputs/22_input.txt", 'utf-8')
 const sampleContent = readFileSync("inputs/22_sample.txt", 'utf-8')
 
 const incs = [ [0, 1], [1, 0], [0, -1], [-1, 0]  ];
 
-function run(content: string) {
-    const lines = content.split('\n')
-    lines.pop() // Remove last empty line
+function getBoard(content: string, size: number) {
+  const lines = content.split('\n')
+  lines.pop() // Remove last empty line
+  const grid: string[] = lines.slice(0, lines.length - 2)
+  const path = lines[lines.length - 1]
 
-    const board: string[] = lines.slice(0, lines.length - 2)
-    const path = lines[lines.length - 1]
+  assert(grid.length % size === 0)
+  const faceRows = Math.floor(grid.length / size)
+  const faceCols = Math.floor(12 / faceRows)
+  const rows = faceRows * size
+  const cols = faceCols * size
+  for (let i = 0; i < grid.length; i++) {
+    assert(grid[i].length % size === 0)
+    assert(grid[i].length <= cols)
+    grid[i] += ' '.repeat(cols - lines[i].length)
+    assert(grid[i].length == cols)
+  }
+  // console.debug("check sizes",faceRows, faceCols, rows, cols)
+  return { grid, faceRows, faceCols, rows, cols, path }
+}
 
-    let y = 0, x = lines[0].indexOf('.')
-    let dir = 0
+function run(content: string, size: number) {
+  const { grid, faceRows, faceCols, rows, cols, path } = getBoard(content, size)
+  let y = 0, x = grid[0].indexOf('.'), dir = 0
 
-    // console.debug(y, x, dir)
-
-    for (let i = 0; i < path.length; i++) {
-        if (path[i] === 'L') {
-            dir = (dir + 3) % 4
-        } else if (path[i] === 'R') {
-            dir = (dir + 1) % 4
-        } else {
-            let moves = 0
-            while (i < path.length && path[i] !== 'L' && path[i] !== 'R') {
-              moves = moves * 10 + path[i++].charCodeAt(0) - '0'.charCodeAt(0)
-            }
-            i--
-            const [yinc, xinc] = incs[dir]
-            for (let move = 0; move < moves; move++) {
-              let yend = y + yinc
-              let xend = x + xinc
-              if (yend == -1) {
-                yend = board.length - 1
-                while (xend >= board[yend].length) yend--;
-              }
-              if (yend == board.length) {
-                yend = 0
-                while (xend >= board[yend].length) yend++;
-              }
-              if (xend == -1) xend = board[yend].length - 1
-              if (xend == board[yend].length) xend = 0
-              // console.debug("move ini", move, y, x, yend, xend, board[yend][xend], board[yend].length)
-              while (board[yend][xend] === ' ') {
-                yend += yinc
-                xend += xinc
-                if (yend == -1) yend = board.length - 1
-                if (yend == board.length) yend = 0
-                if (xend == -1) xend = board[yend].length - 1
-                if (xend == board[yend].length) xend = 0
-              }
-              // console.debug("move ini adj", move, y, x, yend, xend)
-              if (board[yend][xend] === '#') break;
-              y = yend; x = xend
-            }
-            console.debug("moves", moves, "coord", y+1, x+1)
-            // console.debug("pos", y, x)
-        }
-    }
-
-    console.debug(y+1, x+1, dir, 1000 * (y+1) + 4 * (x+1) + dir)
+  for (let i = 0; i < path.length; i++) switch(path[i]) {
+    case 'L': dir = (dir + 3) % 4; break;
+    case 'R': dir = (dir + 1) % 4; break;
+    default: 
+      let moves = 0
+      while (i < path.length && path[i] !== 'L' && path[i] !== 'R') {
+        moves = moves * 10 + path[i++].charCodeAt(0) - '0'.charCodeAt(0)
+      }
+      i--
+      for (let move = 0, yend = y, xend = x; move < moves; move++, y = yend, x = xend) {
+        // console.debug("move ini", move, y, x, yend, xend, board[yend][xend])
+        do {
+          yend += incs[dir][0]; xend += incs[dir][1]
+          if (yend == -1) yend = rows - 1
+          if (yend == rows) yend = 0
+          if (xend == -1) xend = cols - 1
+          if (xend == cols) xend = 0
+        } while (grid[yend][xend] === ' ')
+        // console.debug("move ini adj", move, y, x, yend, xend)
+        if (grid[yend][xend] === '#') break
+      }
+      // console.debug("moves", moves, "coord", y+1, x+1)
+      // console.debug("pos", y, x)
+      break;
   }
 
-//run(sampleContent); // 6032 (sample)
-run(inputContent); // 179210
+  console.debug(y+1, x+1, dir, 1000 * (y+1) + 4 * (x+1) + dir)
+}
+
+run(sampleContent, 4); // 6032 (sample)
+run(inputContent, 50); // 109094
+
+run(sampleContent, 4); // 5031 (sample) PART 2
