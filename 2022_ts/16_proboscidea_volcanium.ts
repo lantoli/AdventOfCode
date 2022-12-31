@@ -43,7 +43,7 @@ function run(content: string, minutes: number, withElephant: boolean) {
         const newMinute = minute + 1;
         const remainingMinutes = minutes - newMinute + 1;
         const optimistic = remainRate * remainingMinutes;
-        if (optimistic <= 0 || ret > pressure + optimistic || open.size === valves.length) continue;
+        if (optimistic <= 0 || ret > pressure + optimistic) continue;
 
         const newMes = getChildPlayers(me);
         const newEls = getChildPlayers(el);
