@@ -8,17 +8,14 @@ const sample2Content = readFileSync("inputs/24_sample2.txt", 'utf-8')
 const dirs = [ [-1, 0], [1, 0], [0, -1], [0, 1] ]
 const dirChars = ["^", "v", "<", ">"]
 
-const mcm = (a: number, b: number): number => (a * b) / mcd(a, b);
-const mcd = (a: number, b: number): number => (b === 0) ? a : mcd(b, a % b);
-
 function run(content: string) {
     const lines = content.split('\n')
     lines.pop() // Remove last empty line
 
     const rows = lines.length
     const cols = lines[1].length
-    const cycle = mcm(rows - 2, cols - 2)
-    const mod = Math.max(cols, rows, cycle) + 2 // small safety margin
+    const cycle = (rows - 2) * (cols - 2)
+    const mod = Math.max(cols, rows, cycle) + 2
     const fromCoord = (y: number, x: number) => y * mod + x
     const toCoord = (n: number) => [Math.floor(n / mod), n % mod]
     
@@ -53,36 +50,41 @@ function run(content: string) {
         }
     }
     
-    const ini = fromCoord(0, 1), end = fromCoord(rows - 1, cols - 2)
+    function path(from: number, to: number, minute: number) : number {
+        let states = new Set([from])
+        outer: for (; ; minute++) {
+            //console.debug("minute", minute, "states", states)
+            const newStates = new Set<number>();
+            for (const state of states) {
+                // console.debug("state", state.minute, toCoord(state.coord), state.path.map(toCoord).join(" ") , "min", min)
+                const [y, x] = toCoord(state)
 
-    let states = new Set([ini])
-    outer: for (var minute = 1; ; minute++) {
-        //console.debug("minute", minute, "states", states)
-        const newStates = new Set<number>();
-        for (const state of states) {
-            // console.debug("state", state.minute, toCoord(state.coord), state.path.map(toCoord).join(" ") , "min", min)
-            const [y, x] = toCoord(state)
-
-            // console.debug("coord", toCoord(state.coord), "newMinute", newMinute, "min", min)
-            for (const [yinc, xinc] of dirs) {
-                const [ynew, xnew] = [y + yinc, x + xinc]
-                if (allowed(minute, ynew, xnew)) {
-                    const newState = fromCoord(ynew, xnew)
-                    if (newState === end) break outer;
-                    newStates.add(newState)
+                // console.debug("coord", toCoord(state.coord), "newMinute", newMinute, "min", min)
+                for (const [yinc, xinc] of dirs) {
+                    const [ynew, xnew] = [y + yinc, x + xinc]
+                    if (allowed(minute, ynew, xnew)) {
+                        const newState = fromCoord(ynew, xnew)
+                        if (newState === to) break outer;
+                        newStates.add(newState)
+                    }
                 }
+
+                if (allowed(minute, y, x)) newStates.add(state)
             }
-
-            if (allowed(minute, y, x)) newStates.add(state)
+            states = newStates
         }
-        states = newStates
+        //console.debug(minute)
+        return minute
     }
-    //console.debug("choosen", choosen, choosen.path.map(toCoord).join(" "))
-    //console.debug("xini, xend", xini, xend)
 
-    console.debug(minute)
+    const ini = fromCoord(0, 1), end = fromCoord(rows - 1, cols - 2)
+    const path1 = path(ini, end, 1)
+    const path2 = path(end, ini, path1)
+    const path3 = path(ini, end, path2)
+
+    console.debug(path1, path3)
 }
 
-run(sample1Content) // 10  (sample 1)
-run(sample2Content) // 18 (sample 2)
-run(inputContent) // 255
+run(sample1Content) // 10, 29  (sample 1)
+run(sample2Content) // 18, 54 (sample 2)
+run(inputContent) // 255, 809
