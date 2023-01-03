@@ -1,3 +1,5 @@
+// NOTE: input is hardcoded in code so it wont work with a different input
+
 type Monkey = {
     items: number[],
     module: number,
