@@ -5,6 +5,6 @@ They are done in Go 1.21.
 ```bash
 cd 2023_go
 
-// to run a challegenge you can run something like:
+// to run a challegenge you can do something like:
 go run 01_trebuchet.go
 ```
