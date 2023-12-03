@@ -8,14 +8,14 @@ import (
 	"go.openly.dev/pointy"
 )
 
-const filepath = "inputs/01_input.txt"
+const filepath01 = "inputs/01_input.txt"
 
 func main() {
-	fmt.Println(calc(filepath, false)) // 55208
-	fmt.Println(calc(filepath, true))  // 54578
+	fmt.Println(calc01(filepath01, false)) // 55208
+	fmt.Println(calc01(filepath01, true))  // 54578
 }
 
-func calc(filepath string, includeLetters bool) int {
+func calc01(filepath string, includeLetters bool) int {
 	var total int
 	content, _ := os.ReadFile(filepath)
 	lines := bytes.Split(content, []byte("\n"))
