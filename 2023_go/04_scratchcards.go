@@ -28,11 +28,8 @@ func calc04b() int {
 	total := 0
 	list := winList()
 	counts := make([]int, len(list))
-	for i := range counts {
-		counts[i] = 1
-	}
 	for i := range list {
-		count := counts[i]
+		count := counts[i] + 1
 		total += count
 		for j := 1; j <= list[i]; j++ {
 			counts[i+j] += count
