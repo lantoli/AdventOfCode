@@ -47,21 +47,15 @@ func winList() []int {
 		line := scanner.Text()
 		matches := pattern.FindAllStringSubmatch(line, -1)
 		var myTurn bool
-		winning := make(map[string]bool)
-		mine := make([]string, 0)
+		winning := make(map[string]int)
+		count := 0
 		for _, match := range matches[1:] {
 			if match[0] == "|" {
 				myTurn = true
 			} else if myTurn {
-				mine = append(mine, match[0])
+				count += winning[match[0]]
 			} else {
-				winning[match[0]] = true
-			}
-		}
-		count := 0
-		for _, me := range mine {
-			if winning[me] {
-				count++
+				winning[match[0]] = 1
 			}
 		}
 		ret = append(ret, count)
