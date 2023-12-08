@@ -3,10 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"regexp"
 	"strconv"
-	"time"
 )
 
 const filepath05 = "inputs/05_input.txt"
@@ -22,7 +22,6 @@ type elm struct {
 }
 
 func calc05(hasRange bool) int {
-	start := time.Now()
 	f, _ := os.Open(filepath05)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
@@ -38,33 +37,18 @@ func calc05(hasRange bool) int {
 			seeds = append(seeds, elm{nums[i], 1})
 		}
 	}
-	follow := 0
-	fmt.Println("AFTER EXPAND", len(seeds))
-	//	fmt.Println("seeds:", seeds)
 	next := make([]elm, 0)
 	for scanner.Scan() {
 		to := getNums(scanner.Text())
 		if len(to) == 0 {
-			follow++
-			//fmt.Println("RESET", follow)
-			for _, seed := range seeds {
-				if seed.len > 0 {
-					next = append(next, seed)
-				}
-			}
-			seeds = next
+			seeds = append(next, seeds...)
 			next = make([]elm, 0)
 			continue
 		}
-		//fmt.Println("TO:", to)
 		dest := to[0]
 		pos := to[1]
 		length := to[2]
-		size := len(seeds)
-		for i := 0; i < size; i++ {
-			if seeds[i].len == 0 {
-				continue
-			}
+		for i := 0; i < len(seeds); i++ {
 			left := max(seeds[i].pos, pos)
 			right := min(seeds[i].pos+seeds[i].len-1, pos+length-1)
 			newLen := right - left + 1
@@ -79,18 +63,10 @@ func calc05(hasRange bool) int {
 				}
 			}
 		}
-		//fmt.Println("seeds:", seeds)
 	}
-	for _, seed := range seeds {
-		if seed.len > 0 {
-			next = append(next, seed)
-		}
-	}
-	fmt.Println("SEEDS:", next)
-	fmt.Printf("Time %s. ", time.Since(start))
-	min := next[0].pos
-	for _, seed := range next {
-		if seed.pos < min {
+	min := math.MaxInt32
+	for _, seed := range append(next, seeds...) {
+		if seed.len > 0 && seed.pos < min {
 			min = seed.pos
 		}
 	}
