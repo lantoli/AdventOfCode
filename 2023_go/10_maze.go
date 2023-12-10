@@ -10,7 +10,7 @@ const filepath10 = "inputs/10_input.txt"
 
 func main() {
 	fmt.Println(calc10(false)) // 7093
-	fmt.Println(calc10(true))  // 407 (ret: 3844, 3844, 407 , 407)
+	fmt.Println(calc10(true))  // 407 (ret: 3844, 3844, 407, 407)
 }
 
 func calc10(enclosed bool) []int {
@@ -111,8 +111,9 @@ func countCluster(walls map[state]bool, maze [][]byte, ini state) int {
 			continue
 		}
 		visited[s] = true
-		if !walls[state{row: s.row, col: s.col}] {
-			count[state{row: s.row, col: s.col}] = true
+		basicState := state{row: s.row, col: s.col}
+		if !walls[basicState] {
+			count[basicState] = true
 		}
 
 		if s.s && s.row+1 < rows {
