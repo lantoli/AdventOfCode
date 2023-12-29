@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -11,14 +12,16 @@ import (
 const filepath12 = "inputs/12_input.txt"
 
 func main() {
-	fmt.Println(calc12()) // 7025
+	//fmt.Println(calc12(1)) // 7025
+	fmt.Println(calc12(5)) // XXX
 }
 
-func calc12() int {
+func calc12(repeat int) int {
 	f, _ := os.Open(filepath12)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	total := 0
+	lines := 0
 	for scanner.Scan() {
 		line := strings.Fields(scanner.Text())
 		nums := make([]int, 0)
@@ -26,16 +29,28 @@ func calc12() int {
 			num, _ := strconv.Atoi(numStr)
 			nums = append(nums, num)
 		}
-		total += calc12Line(line[0], nums)
+		total += calc12Line(line[0], nums, repeat)
+		lines++
+		fmt.Println(lines)
 	}
 	return total
 }
 
-func calc12Line(field string, nums []int) int {
-	return calc12Rec(field+".", nums, 0, 0, 0)
+func calc12Line(field string, nums []int, repeat int) int {
+	f := ""
+	n := make([]int, 0)
+	for i := 0; i < repeat; i++ {
+		f += field
+		n = append(n, nums...)
+		if i != repeat-1 {
+			f += "?"
+		}
+	}
+	f = regexp.MustCompile(`\.+`).ReplaceAllString(f+".", ".")
+	return calc12Rec([]byte(f), n, 0, 0, 0)
 }
 
-func calc12Rec(field string, nums []int, posField, posNums int, failing int) int {
+func calc12Rec(field []byte, nums []int, posField, posNums int, failing int) int {
 	if posNums == len(nums) || posField == len(field) {
 		for posField != len(field) && field[posField] != '#' {
 			posField++
@@ -53,11 +68,16 @@ func calc12Rec(field string, nums []int, posField, posNums int, failing int) int
 			}
 			posNums++
 		}
-		return calc12Rec(field, nums, posField+1, posNums, 0)
+		ret := calc12Rec(field, nums, posField+1, posNums, 0)
+		return ret
 	} else if field[posField] == '#' {
-		return calc12Rec(field, nums, posField+1, posNums, failing+1)
+		ret := calc12Rec(field, nums, posField+1, posNums, failing+1)
+		return ret
 	}
-	field1 := field[:posField] + "#" + field[posField+1:]
-	field2 := field[:posField] + "." + field[posField+1:]
-	return calc12Rec(field1, nums, posField, posNums, failing) + calc12Rec(field2, nums, posField, posNums, failing)
+	field[posField] = '#'
+	total := calc12Rec(field, nums, posField, posNums, failing)
+	field[posField] = '.'
+	total += calc12Rec(field, nums, posField, posNums, failing)
+	field[posField] = '?'
+	return total
 }
