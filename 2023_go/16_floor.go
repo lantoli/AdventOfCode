@@ -26,8 +26,8 @@ func calc16(all bool) int {
 	}
 	ret := calc16Main(grid, st16{0, 0, EAST, &grid})
 	if all {
+		n := len(grid)
 		for i := range grid {
-			n := len(grid)
 			ret = max(ret, calc16Main(grid, st16{i, 0, EAST, &grid}))
 			ret = max(ret, calc16Main(grid, st16{i, n - 1, WEST, &grid}))
 			ret = max(ret, calc16Main(grid, st16{0, i, SOUTH, &grid}))
