@@ -24,14 +24,14 @@ func calc16(all bool) int {
 	if len(grid) != len(grid[0]) {
 		panic("grid is not square")
 	}
-	ret := calc16Main(grid, st16{0, 0, EAST, &grid})
+	n := len(grid)
+	ret := calc16Main(grid, st16{0, 0, EAST, n})
 	if all {
-		n := len(grid)
 		for i := range grid {
-			ret = max(ret, calc16Main(grid, st16{i, 0, EAST, &grid}))
-			ret = max(ret, calc16Main(grid, st16{i, n - 1, WEST, &grid}))
-			ret = max(ret, calc16Main(grid, st16{0, i, SOUTH, &grid}))
-			ret = max(ret, calc16Main(grid, st16{n - 1, i, NORTH, &grid}))
+			ret = max(ret, calc16Main(grid, st16{i, 0, EAST, n}))
+			ret = max(ret, calc16Main(grid, st16{i, n - 1, WEST, n}))
+			ret = max(ret, calc16Main(grid, st16{0, i, SOUTH, n}))
+			ret = max(ret, calc16Main(grid, st16{n - 1, i, NORTH, n}))
 		}
 	}
 	return ret
@@ -58,7 +58,7 @@ func calc16Main(grid []string, ini st16) int {
 				state.dir = map[int]int{NORTH: EAST, EAST: NORTH, SOUTH: WEST, WEST: SOUTH}[state.dir]
 			case '|':
 				if state.dir == EAST || state.dir == WEST {
-					copy := st16{state.y, state.x, NORTH, state.grid}
+					copy := st16{state.y, state.x, NORTH, n}
 					if copy.move() {
 						newStates = append(newStates, copy)
 					}
@@ -66,7 +66,7 @@ func calc16Main(grid []string, ini st16) int {
 				}
 			case '-':
 				if state.dir == NORTH || state.dir == SOUTH {
-					copy := st16{state.y, state.x, EAST, state.grid}
+					copy := st16{state.y, state.x, EAST, n}
 					if copy.move() {
 						newStates = append(newStates, copy)
 					}
@@ -91,10 +91,10 @@ func calc16Main(grid []string, ini st16) int {
 }
 
 type st16 struct {
-	y    int
-	x    int
-	dir  int
-	grid *[]string
+	y   int
+	x   int
+	dir int
+	n   int
 }
 
 func (s *st16) move() bool {
@@ -108,8 +108,7 @@ func (s *st16) move() bool {
 	case WEST:
 		s.x--
 	}
-	n := len(*s.grid)
-	return s.y >= 0 && s.y < n && s.x >= 0 && s.x < n
+	return s.y >= 0 && s.y < s.n && s.x >= 0 && s.x < s.n
 }
 
 const (
