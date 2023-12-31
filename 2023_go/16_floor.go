@@ -9,10 +9,11 @@ import (
 const filepath16 = "inputs/16_input.txt"
 
 func main() {
-	fmt.Println(calc16()) // 7477
+	fmt.Println(calc16(false)) // 7477
+	fmt.Println(calc16(true))  // 7853
 }
 
-func calc16() int {
+func calc16(all bool) int {
 	f, _ := os.Open(filepath16)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
@@ -23,17 +24,26 @@ func calc16() int {
 	if len(grid) != len(grid[0]) {
 		panic("grid is not square")
 	}
-	return calc16Main(grid)
+	ret := calc16Main(grid, st16{0, 0, EAST, &grid})
+	if all {
+		for i := range grid {
+			n := len(grid)
+			ret = max(ret, calc16Main(grid, st16{i, 0, EAST, &grid}))
+			ret = max(ret, calc16Main(grid, st16{i, n - 1, WEST, &grid}))
+			ret = max(ret, calc16Main(grid, st16{0, i, SOUTH, &grid}))
+			ret = max(ret, calc16Main(grid, st16{n - 1, i, NORTH, &grid}))
+		}
+	}
+	return ret
 }
 
-func calc16Main(grid []string) int {
+func calc16Main(grid []string, ini st16) int {
 	n := len(grid)
 	seen := make([][]int, n)
 	for i := range seen {
 		seen[i] = make([]int, n)
 	}
-	states := append([]st16{}, st16{0, 0, EAST, &grid})
-	// seen[0][0] |= EAST
+	states := append([]st16{}, ini)
 	for len(states) > 0 {
 		newStates := make([]st16, 0)
 		for _, state := range states {
@@ -42,69 +52,29 @@ func calc16Main(grid []string) int {
 			}
 			seen[state.y][state.x] |= state.dir
 			switch grid[state.y][state.x] {
-			case '.':
-				if state.move() {
-					newStates = append(newStates, state)
-				}
 			case '\\':
-				switch state.dir {
-				case NORTH:
-					state.dir = WEST
-				case EAST:
-					state.dir = SOUTH
-				case SOUTH:
-					state.dir = EAST
-				case WEST:
-					state.dir = NORTH
-				}
-				if state.move() {
-					newStates = append(newStates, state)
-				}
+				state.dir = map[int]int{NORTH: WEST, EAST: SOUTH, SOUTH: EAST, WEST: NORTH}[state.dir]
 			case '/':
-				switch state.dir {
-				case NORTH:
-					state.dir = EAST
-				case EAST:
-					state.dir = NORTH
-				case SOUTH:
-					state.dir = WEST
-				case WEST:
-					state.dir = SOUTH
-				}
-				if state.move() {
-					newStates = append(newStates, state)
-				}
+				state.dir = map[int]int{NORTH: EAST, EAST: NORTH, SOUTH: WEST, WEST: SOUTH}[state.dir]
 			case '|':
-				if state.dir == NORTH || state.dir == SOUTH {
-					if state.move() {
-						newStates = append(newStates, state)
-					}
-				} else {
+				if state.dir == EAST || state.dir == WEST {
 					copy := st16{state.y, state.x, NORTH, state.grid}
 					if copy.move() {
 						newStates = append(newStates, copy)
 					}
-					copy = st16{state.y, state.x, SOUTH, state.grid}
-					if copy.move() {
-						newStates = append(newStates, copy)
-					}
+					state.dir = SOUTH
 				}
-
 			case '-':
-				if state.dir == EAST || state.dir == WEST {
-					if state.move() {
-						newStates = append(newStates, state)
-					}
-				} else {
+				if state.dir == NORTH || state.dir == SOUTH {
 					copy := st16{state.y, state.x, EAST, state.grid}
 					if copy.move() {
 						newStates = append(newStates, copy)
 					}
-					copy = st16{state.y, state.x, WEST, state.grid}
-					if copy.move() {
-						newStates = append(newStates, copy)
-					}
+					state.dir = WEST
 				}
+			}
+			if state.move() {
+				newStates = append(newStates, state)
 			}
 		}
 		states = newStates
@@ -138,10 +108,6 @@ func (s *st16) move() bool {
 	case WEST:
 		s.x--
 	}
-	return s.valid()
-}
-
-func (s *st16) valid() bool {
 	n := len(*s.grid)
 	return s.y >= 0 && s.y < n && s.x >= 0 && s.x < n
 }
