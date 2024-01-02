@@ -12,8 +12,8 @@ import (
 const filepath12 = "inputs/12_input.txt"
 
 func main() {
-	//fmt.Println(calc12(1)) // 7025
-	fmt.Println(calc12(5)) // XXX
+	fmt.Println(calc12(1)) // 7025
+	fmt.Println(calc12(5)) // XXX (it takes a few hours with goroutines, there is surely a faster algorithm)
 }
 
 func calc12(repeat int) int {
@@ -22,6 +22,7 @@ func calc12(repeat int) int {
 	scanner := bufio.NewScanner(f)
 	total := 0
 	lines := 0
+	ch := make(chan int)
 	for scanner.Scan() {
 		line := strings.Fields(scanner.Text())
 		nums := make([]int, 0)
@@ -29,14 +30,17 @@ func calc12(repeat int) int {
 			num, _ := strconv.Atoi(numStr)
 			nums = append(nums, num)
 		}
-		total += calc12Line(line[0], nums, repeat)
+		go calc12Line(ch, line[0], nums, repeat)
 		lines++
-		fmt.Println(lines)
+	}
+	for lines > 0 {
+		total += <-ch
+		lines--
 	}
 	return total
 }
 
-func calc12Line(field string, nums []int, repeat int) int {
+func calc12Line(ch chan int, field string, nums []int, repeat int) {
 	f := ""
 	n := make([]int, 0)
 	for i := 0; i < repeat; i++ {
@@ -47,7 +51,7 @@ func calc12Line(field string, nums []int, repeat int) int {
 		}
 	}
 	f = regexp.MustCompile(`\.+`).ReplaceAllString(f+".", ".")
-	return calc12Rec([]byte(f), n, 0, 0, 0)
+	ch <- calc12Rec([]byte(f), n, 0, 0, 0)
 }
 
 func calc12Rec(field []byte, nums []int, posField, posNums int, failing int) int {
