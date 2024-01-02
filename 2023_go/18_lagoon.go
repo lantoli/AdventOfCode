@@ -10,6 +10,8 @@ import (
 
 const filepath18 = "inputs/18_sample.txt"
 
+var grid18 [][]bool
+
 func main() {
 	fmt.Println(calc18(false)) // 48652
 	fmt.Println(calc18(true))  // XXX
@@ -54,58 +56,50 @@ func calc18Main(insts []inst18) int {
 		xmax, xmin, ymin, ymax = max(xmax, x), min(xmin, x), min(ymin, y), max(ymax, y)
 	}
 	yrange, xrange := ymax-ymin+1, xmax-xmin+1
-	grid := make([][]bool, yrange)
-	for i := range grid {
-		grid[i] = make([]bool, xrange)
+	grid18 = make([][]bool, yrange)
+	for i := range grid18 {
+		grid18[i] = make([]bool, xrange)
 	}
 	y, x = -ymin, -xmin
-	grid[y][x] = true
+	grid18[y][x] = true
 	for _, inst := range insts {
 		yinc, xinc := inst.inc()
 		for i := 0; i < inst.count; i++ {
 			y, x = y+yinc, x+xinc
-			grid[y][x] = true
+			grid18[y][x] = true
 		}
 	}
-	fmt.Println("centro", -ymin, -xmin, grid[-ymin][-xmin])
-	fmt.Println("esquina", -ymin+1, -xmin+1, grid[-ymin+1][-xmin+1])
-	list := append([]int{}, (-ymin+1)*xrange-xmin+1)
-	count := 0
-	for len(list) > 0 {
-		if len(list) > count {
-			count = len(list)
-			fmt.Println(count)
-		}
-		newList := make([]int, 0, len(list))
-		for _, elm := range list {
-			y, x := elm/xrange, elm%xrange
-			if !grid[y][x] {
-				grid[y][x] = true
-				if y-1 >= 0 && !grid[y-1][x] {
-					newList = append(newList, xrange*(y-1)+x)
-				}
-				if y+1 < yrange && !grid[y+1][x] {
-					newList = append(newList, xrange*(y+1)+x)
-				}
-				if x-1 >= 0 && !grid[y][x-1] {
-					newList = append(newList, xrange*y+x-1)
-				}
-				if x+1 < xrange && !grid[y][x+1] {
-					newList = append(newList, xrange*y+x+1)
+	out := 0
+	for y := 0; y < yrange; y++ {
+		out += color(y, 0, yrange, xrange)
+		out += color(y, xrange-1, yrange, xrange)
+	}
+	for x := 0; x < xrange; x++ {
+		out += color(0, x, yrange, xrange)
+		out += color(yrange-1, x, yrange, xrange)
+	}
+	return xrange*yrange - out
+}
+
+func color(y, x, yrange, xrange int) int {
+	ret := 0
+	visited := append([]int{}, y*xrange+x)
+	for len(visited) > 0 {
+		newVisited := make([]int, 0, len(visited)*4)
+		for _, v := range visited {
+			y, x := v/xrange, v%xrange
+			if y >= 0 && y < yrange && x >= 0 && x < xrange && !grid18[y][x] {
+				grid18[y][x] = true
+				ret++
+				newVisited = append(newVisited, y*xrange+x-1, y*xrange+x+1, (y-1)*xrange+x, (y+1)*xrange+x)
+				if len(newVisited) > 100 {
+					newVisited = newVisited[:100] // DELETE THIS
 				}
 			}
 		}
-		list = newList
+		visited = newVisited
 	}
-	total := 0
-	for y := range grid {
-		for x := range grid[y] {
-			if grid[y][x] {
-				total++
-			}
-		}
-	}
-	return total
+	return ret
 }
 
 type inst18 struct {
