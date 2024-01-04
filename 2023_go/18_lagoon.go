@@ -3,14 +3,16 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/big"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 )
 
-const filepath18 = "inputs/18_sample.txt"
+const filepath18 = "inputs/18_input.txt"
 
-var grid18 [][]bool
+var grid18 []big.Int
 
 func main() {
 	fmt.Println(calc18(false)) // 48652
@@ -56,17 +58,17 @@ func calc18Main(insts []inst18) int {
 		xmax, xmin, ymin, ymax = max(xmax, x), min(xmin, x), min(ymin, y), max(ymax, y)
 	}
 	yrange, xrange := ymax-ymin+1, xmax-xmin+1
-	grid18 = make([][]bool, yrange)
-	for i := range grid18 {
-		grid18[i] = make([]bool, xrange)
-	}
+	grid18 = make([]big.Int, yrange)
+	//for i := range grid18 {
+	//	grid18[i] = make([]bool, xrange)
+	//	}
 	y, x = -ymin, -xmin
-	grid18[y][x] = true
+	grid18[y].SetBit(&grid18[y], x, 1)
 	for _, inst := range insts {
 		yinc, xinc := inst.inc()
 		for i := 0; i < inst.count; i++ {
 			y, x = y+yinc, x+xinc
-			grid18[y][x] = true
+			grid18[y].SetBit(&grid18[y], x, 1)
 		}
 	}
 	out := 0
@@ -84,17 +86,22 @@ func calc18Main(insts []inst18) int {
 func color(y, x, yrange, xrange int) int {
 	ret := 0
 	visited := append([]int{}, y*xrange+x)
+	count := 0
 	for len(visited) > 0 {
 		newVisited := make([]int, 0, len(visited)*4)
 		for _, v := range visited {
 			y, x := v/xrange, v%xrange
-			if y >= 0 && y < yrange && x >= 0 && x < xrange && !grid18[y][x] {
-				grid18[y][x] = true
+			if y >= 0 && y < yrange && x >= 0 && x < xrange && grid18[y].Bit(x) == 0 {
+				grid18[y].SetBit(&grid18[y], x, 1)
 				ret++
 				newVisited = append(newVisited, y*xrange+x-1, y*xrange+x+1, (y-1)*xrange+x, (y+1)*xrange+x)
-				if len(newVisited) > 100 {
-					newVisited = newVisited[:100] // DELETE THIS
+				if len(newVisited) > 10 {
+					newVisited = newVisited[:10] // DELETE THIS
 				}
+			}
+			count++
+			if (count % 10) == 0 {
+				runtime.GC()
 			}
 		}
 		visited = newVisited
