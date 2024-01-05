@@ -37,18 +37,22 @@ outer:
 			}
 		}
 	}
-	v := map[int]any{y*n + x: nil}
+	v := map[st21]any{st21{y, x}: nil}
 	for i := 0; i < 64; i++ {
-		newv := make(map[int]any)
+		newv := make(map[st21]any)
 		for k := range v {
 			for _, inc := range [][2]int{{-1, 0}, {1, 0}, {0, 1}, {0, -1}} {
-				y, x := k/n+inc[0], k%n+inc[1]
+				y, x := k.y+inc[0], k.x+inc[1]
 				if y >= 0 && y < n && x >= 0 && x < n && grid[y][x] != '#' {
-					newv[y*n+x] = nil
+					newv[st21{y, x}] = nil
 				}
 			}
 		}
 		v = newv
 	}
 	return len(v)
+}
+
+type st21 struct {
+	y, x int
 }
