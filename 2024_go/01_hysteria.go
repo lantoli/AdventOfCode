@@ -8,7 +8,7 @@ import (
 
 // 2580760 25358365 (sample 11 31)
 func main() {
-	solve("01_input.txt", line01, calc01_1, calc01_2)
+	solve("01_input.txt", line01, nil, calc01a, calc01b)
 }
 
 var (
@@ -24,7 +24,7 @@ func line01(line string) {
 	list2 = append(list2, num2)
 }
 
-func calc01_1() int {
+func calc01a() int {
 	sort.Ints(list1)
 	sort.Ints(list2)
 	total := 0
@@ -34,7 +34,7 @@ func calc01_1() int {
 	return total
 }
 
-func calc01_2() int {
+func calc01b() int {
 	map2 := make(map[int]int)
 	for _, x := range list2 {
 		map2[x]++

@@ -6,14 +6,27 @@ import (
 	"os"
 )
 
-func solve(inputFile string, processLine func(string), ret1, ret2 func() int) {
-	f, _ := os.Open("inputs/" + inputFile)
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		processLine(scanner.Text())
+func solve(inputFile string, processLine1, processLine2 func(string), ret1, ret2 func() int) {
+	f1, _ := os.Open("inputs/" + inputFile)
+	defer f1.Close()
+	scanner1 := bufio.NewScanner(f1)
+	for scanner1.Scan() {
+		line := scanner1.Text()
+		if processLine1 != nil {
+			processLine1(line)
+		}
 	}
 	fmt.Println(ret1())
+
+	f2, _ := os.Open("inputs/" + inputFile)
+	defer f2.Close()
+	scanner2 := bufio.NewScanner(f2)
+	for scanner2.Scan() {
+		line := scanner2.Text()
+		if processLine2 != nil {
+			processLine2(line)
+		}
+	}
 	fmt.Println(ret2())
 }
 
