@@ -6,8 +6,8 @@ func main() {
 }
 
 var (
-	input10    = make([][]int, 0)
-	rows, cols int
+	input10        = make([][]int, 0)
+	rows10, cols10 int
 )
 
 func line10a(line string) {
@@ -16,14 +16,14 @@ func line10a(line string) {
 		row[i] = int(ch) - '0'
 	}
 	input10 = append(input10, row)
-	rows = len(input10)
-	cols = len(input10[0])
+	rows10 = len(input10)
+	cols10 = len(input10[0])
 }
 
 func solve10a() int {
 	total := 0
-	for y := range rows {
-		for x := range cols {
+	for y := range rows10 {
+		for x := range cols10 {
 			if input10[y][x] == 0 {
 				visited := make(map[int]interface{}, 0)
 				paths10a(y, x, visited)
@@ -36,27 +36,27 @@ func solve10a() int {
 
 func paths10a(y, x int, visited map[int]interface{}) {
 	if input10[y][x] == 9 {
-		visited[y*cols+x] = true
+		visited[y*cols10+x] = true
 		return
 	}
 	if y-1 >= 0 && input10[y-1][x] == input10[y][x]+1 {
 		paths10a(y-1, x, visited)
 	}
-	if y+1 < rows && input10[y+1][x] == input10[y][x]+1 {
+	if y+1 < rows10 && input10[y+1][x] == input10[y][x]+1 {
 		paths10a(y+1, x, visited)
 	}
 	if x-1 >= 0 && input10[y][x-1] == input10[y][x]+1 {
 		paths10a(y, x-1, visited)
 	}
-	if x+1 < cols && input10[y][x+1] == input10[y][x]+1 {
+	if x+1 < cols10 && input10[y][x+1] == input10[y][x]+1 {
 		paths10a(y, x+1, visited)
 	}
 }
 
 func solve10b() int {
 	total := 0
-	for y := range rows {
-		for x := range cols {
+	for y := range rows10 {
+		for x := range cols10 {
 			if input10[y][x] == 0 {
 				total += paths10b(y, x, 0)
 			}
@@ -73,13 +73,13 @@ func paths10b(y, x, acc int) int {
 	if y-1 >= 0 && input10[y-1][x] == input10[y][x]+1 {
 		total += paths10b(y-1, x, acc)
 	}
-	if y+1 < rows && input10[y+1][x] == input10[y][x]+1 {
+	if y+1 < rows10 && input10[y+1][x] == input10[y][x]+1 {
 		total += paths10b(y+1, x, acc)
 	}
 	if x-1 >= 0 && input10[y][x-1] == input10[y][x]+1 {
 		total += paths10b(y, x-1, acc)
 	}
-	if x+1 < cols && input10[y][x+1] == input10[y][x]+1 {
+	if x+1 < cols10 && input10[y][x+1] == input10[y][x]+1 {
 		total += paths10b(y, x+1, acc)
 	}
 	return total
