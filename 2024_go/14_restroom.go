@@ -15,7 +15,7 @@ var (
 	px14, py14, vx14, vy14 []int
 )
 
-// 215476074 6285 (sample 12 XX)
+// 215476074 6285 (sample 12)
 func main() {
 	solve("14_input.txt", line14, nil, solve14a, solve14b)
 }
