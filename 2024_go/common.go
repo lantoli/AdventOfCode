@@ -53,3 +53,7 @@ func min[T int](a, b T) T {
 	}
 	return b
 }
+
+func modpos[T int](a, b T) T {
+	return (a%b + b) % b
+}
