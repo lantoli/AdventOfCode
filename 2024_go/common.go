@@ -46,3 +46,10 @@ func sign[T int](x T) T {
 	}
 	return 1
 }
+
+func min[T int](a, b T) T {
+	if a <= b {
+		return a
+	}
+	return b
+}
