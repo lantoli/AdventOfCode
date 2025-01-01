@@ -6,13 +6,11 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"sync/atomic"
 )
 
 var (
 	file13 = "13_input.txt"
 	re13   = regexp.MustCompile(`(?:[\+=])(\d+)`)
-	inc13  atomic.Int64
 )
 
 // 29023 96787395375634 (sample 480 875318608908)
@@ -23,7 +21,6 @@ func main() {
 }
 
 func solve13a(partB bool) {
-	inc13.Store(0)
 	f, _ := os.Open("inputs/" + file13)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
