@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -14,7 +15,7 @@ var (
 	px14, py14, vx14, vy14 []int
 )
 
-// 215476074 XX (sample 12 XX)
+// 215476074 6285 (sample 12 XX)
 func main() {
 	solve("14_input.txt", line14, nil, solve14a, solve14b)
 }
@@ -30,7 +31,21 @@ func solve14a() int {
 }
 
 func solve14b() int {
-	return 0
+	x := append([]int(nil), px14...)
+	y := append([]int(nil), py14...)
+	minNum, minSec := math.MaxInt64, 0
+	for seconds := 1; seconds <= 1_000_000; seconds++ {
+		for i := range x {
+			x[i] = modpos(x[i]+vx14[i], cols14)
+			y[i] = modpos(y[i]+vy14[i], rows14)
+		}
+		q1, q2, q3, q4 := quad14(x, y)
+		if minNum > q1*q2*q3*q4 {
+			minNum = q1 * q2 * q3 * q4
+			minSec = seconds
+		}
+	}
+	return minSec
 }
 
 func quad14(x, y []int) (q1, q2, q3, q4 int) {
@@ -68,56 +83,23 @@ func next14(line string) (px, py, vx, vy int) {
 	return px, py, vx, vy
 }
 
-// DELETE
+func writeGrid(filename string, grid [][]int) {
+	file, err := os.Create(filename)
+	if err != nil {
+		panic("error creating file: " + filename)
+	}
+	defer file.Close()
 
-func solve(inputFile string, processLine1, processLine2 func(string), ret1, ret2 func() int) {
-	f1, _ := os.Open("inputs/" + inputFile)
-	defer f1.Close()
-	scanner1 := bufio.NewScanner(f1)
-	for scanner1.Scan() {
-		line := scanner1.Text()
-		if processLine1 != nil {
-			processLine1(line)
+	writer := bufio.NewWriter(file)
+	for _, row := range grid {
+		for _, val := range row {
+			if val == 0 {
+				fmt.Fprintf(writer, ".")
+			} else {
+				fmt.Fprintf(writer, "%d", val)
+			}
 		}
+		fmt.Fprintln(writer)
 	}
-	fmt.Println(ret1())
-
-	f2, _ := os.Open("inputs/" + inputFile)
-	defer f2.Close()
-	scanner2 := bufio.NewScanner(f2)
-	for scanner2.Scan() {
-		line := scanner2.Text()
-		if processLine2 != nil {
-			processLine2(line)
-		}
-	}
-	fmt.Println(ret2())
-}
-
-func abs[T int](x T) T {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
-func sign[T int](x T) T {
-	if x == 0 {
-		return 0
-	}
-	if x < 0 {
-		return -1
-	}
-	return 1
-}
-
-func min[T int](a, b T) T {
-	if a <= b {
-		return a
-	}
-	return b
-}
-
-func modpos[T int](a, b T) T {
-	return (a%b + b) % b
+	writer.Flush()
 }
