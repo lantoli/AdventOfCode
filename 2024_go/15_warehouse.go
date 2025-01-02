@@ -7,10 +7,10 @@ import (
 )
 
 var (
-	file15 = "15_sample.txt"
+	file15 = "15_input.txt"
 )
 
-// 1515788 XX (sample a: 2028 10092, b: 9021)
+// 1515788 1516544 (sample a: 2028 10092, b: 9021)
 // takes minutes using parallelism, algorithm can surely be optimized to run in seconds in serial
 func main() {
 	solve15(false)
@@ -56,8 +56,6 @@ func solve15(large bool) {
 		}
 	}
 	for i, dir := range dirs {
-		//fmt.Printf("%c - %d\n", dir, i)
-		//drawWarehouse(grid)
 		y, x := pos15(grid)
 		if i == 180000 {
 			fmt.Println("break")
@@ -104,21 +102,47 @@ func movex15a(grid [][]rune, y, x, xinc int) bool {
 	}
 }
 
-func movey15a(grid [][]rune, y, x, yinc int) bool {
-	switch ch := grid[y+yinc][x]; ch {
-	case '#':
-		return false
-	case '.':
-		grid[y][x], grid[y+yinc][x] = grid[y+yinc][x], grid[y][x]
-		return true
-	case 'O', '[', ']':
-		if movey15a(grid, y+yinc, x, yinc) {
-			grid[y][x], grid[y+yinc][x] = grid[y+yinc][x], grid[y][x]
-			return true
+func movey15a(grid [][]rune, yini, xini, yinc int) {
+	line := []int{xini, yini}
+	moves := append([][]int{}, line)
+	for len(line) > 0 {
+		y := line[len(line)-1] + yinc
+		xx := line[:len(line)-1]
+		for _, x := range xx {
+			if grid[y][x] == '#' {
+				return
+			}
 		}
-		return false
-	default:
-		panic("invalid move")
+		m := make(map[int]interface{})
+		for _, x := range xx {
+			switch ch := grid[y][x]; ch {
+			case '.':
+			case 'O':
+				m[x] = nil
+			case '[':
+				m[x] = nil
+				m[x+1] = nil
+			case ']':
+				m[x] = nil
+				m[x-1] = nil
+			}
+		}
+		line = make([]int, 0)
+		for k := range m {
+			line = append(line, k)
+		}
+		if len(line) > 0 {
+			line = append(line, y)
+			moves = append(moves, line)
+		}
+	}
+	for i := len(moves) - 1; i >= 0; i-- {
+		move := moves[i]
+		y := move[len(move)-1]
+		xx := move[:len(move)-1]
+		for _, x := range xx {
+			grid[y][x], grid[y+yinc][x] = grid[y+yinc][x], grid[y][x]
+		}
 	}
 }
 
