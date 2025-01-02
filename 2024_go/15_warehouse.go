@@ -55,11 +55,8 @@ func solve15(large bool) {
 			}
 		}
 	}
-	for i, dir := range dirs {
+	for _, dir := range dirs {
 		y, x := pos15(grid)
-		if i == 180000 {
-			fmt.Println("break")
-		}
 		switch dir {
 		case '>':
 			movex15a(grid, y, x, 1)
