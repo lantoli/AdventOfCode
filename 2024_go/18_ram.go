@@ -33,13 +33,10 @@ func line18(line string) {
 func solve18(size, mem int, b bool) int {
 	incs := [][]int{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
 	minsteps := math.MaxInt
-	grid := make([][]rune, 0)
-	for range size {
-		grid = append(grid, make([]rune, size))
-	}
+	grid := make([]bool, size*size)
 	for pos := range mem {
 		x, y := input18[pos][0], input18[pos][1]
-		grid[y][x] = '#'
+		grid[y*size+x] = true
 	}
 	steps := make(map[int]int)
 	list := []int{0}
@@ -54,8 +51,8 @@ func solve18(size, mem int, b bool) int {
 		}
 		for _, inc := range incs {
 			ynext, xnext := y+inc[0], x+inc[1]
-			if ynext >= 0 && ynext < size && xnext >= 0 && xnext < size && grid[ynext][xnext] != '#' {
-				posnext, stepnext := ynext*size+xnext, step+1
+			posnext, stepnext := ynext*size+xnext, step+1
+			if ynext >= 0 && ynext < size && xnext >= 0 && xnext < size && !grid[posnext] {
 				if _, found := steps[posnext]; !found || stepnext < steps[posnext] {
 					steps[posnext] = stepnext
 					list = append(list, posnext)
@@ -67,20 +64,6 @@ func solve18(size, mem int, b bool) int {
 		}
 	}
 	return minsteps
-}
-
-func drawRam(grid [][]rune) {
-	for j := range grid {
-		for i := range grid[0] {
-			ch := grid[j][i]
-			if ch == 0 {
-				ch = '.'
-			}
-			fmt.Printf("%c", ch)
-		}
-		fmt.Println()
-	}
-	fmt.Println()
 }
 
 // DELETE
