@@ -1,21 +1,19 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"math"
-	"os"
 	"strconv"
 	"strings"
 )
 
-// 268 XX  (sample 22 XX)
+// 268 64,11  (sample 22 6,1)
 func main() {
 	file, size, mem := "18_sample.txt", 7, 12
 	if isInput18 {
 		file, size, mem = "18_input.txt", 71, 1024
 	}
-	solve(file, line18, nil, func() int { return solve18(size, mem, false) }, func() int { return solve18(size, mem, true) })
+	solve(file, line18, nil, func() int { return solve18a(size, mem) }, func() int { return solve18b(size) })
 }
 
 var (
@@ -30,14 +28,31 @@ func line18(line string) {
 	input18 = append(input18, []int{x, y})
 }
 
-func solve18(size, mem int, b bool) int {
-	incs := [][]int{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
-	minsteps := math.MaxInt
+func solve18a(size, mem int) int {
 	grid := make([]bool, size*size)
 	for pos := range mem {
 		x, y := input18[pos][0], input18[pos][1]
 		grid[y*size+x] = true
 	}
+	return calc18(size, grid)
+}
+
+func solve18b(size int) int {
+	grid := make([]bool, size*size)
+	for pos := range input18 {
+		x, y := input18[pos][0], input18[pos][1]
+		grid[y*size+x] = true
+		if calc18(size, grid) == math.MaxInt {
+			fmt.Printf("%d,%d\n", x, y)
+			return 0
+		}
+	}
+	panic("no solution")
+}
+
+func calc18(size int, grid []bool) int {
+	incs := [][]int{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
+	minsteps := math.MaxInt
 	steps := make(map[int]int)
 	list := []int{0}
 	steps[0] = 0
@@ -64,65 +79,4 @@ func solve18(size, mem int, b bool) int {
 		}
 	}
 	return minsteps
-}
-
-// DELETE
-
-func solve(inputFile string, processLine1, processLine2 func(string), ret1, ret2 func() int) {
-	f1, _ := os.Open("inputs/" + inputFile)
-	defer f1.Close()
-	scanner1 := bufio.NewScanner(f1)
-	for scanner1.Scan() {
-		line := scanner1.Text()
-		if processLine1 != nil {
-			processLine1(line)
-		}
-	}
-	fmt.Println(ret1())
-
-	f2, _ := os.Open("inputs/" + inputFile)
-	defer f2.Close()
-	scanner2 := bufio.NewScanner(f2)
-	for scanner2.Scan() {
-		line := scanner2.Text()
-		if processLine2 != nil {
-			processLine2(line)
-		}
-	}
-	fmt.Println(ret2())
-}
-
-func abs[T int](x T) T {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
-func sign[T int](x T) T {
-	if x == 0 {
-		return 0
-	}
-	if x < 0 {
-		return -1
-	}
-	return 1
-}
-
-func min[T int](a, b T) T {
-	if a <= b {
-		return a
-	}
-	return b
-}
-
-func max[T int](a, b T) T {
-	if a >= b {
-		return a
-	}
-	return b
-}
-
-func modpos[T int](a, b T) T {
-	return (a%b + b) % b
 }
