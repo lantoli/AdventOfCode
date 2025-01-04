@@ -38,10 +38,54 @@ func line20(line string) {
 type st20 struct {
 	pos, count int
 }
+type stc20 struct {
+	cheat1, cheat2 int
+}
 
 func solve20(b bool) int {
-	fast := fast20(0, 0)
-	return fast
+	return calc20()
+}
+
+func calc20() int {
+	maxcount := fast20(0, 0) - 64
+	cheats := make(map[stc20]interface{})
+	visited := make(map[int]int)
+	list := []st20{{posini20, 0}}
+	ret := math.MaxInt
+	for len(list) > 0 {
+		st := list[0]
+		list = list[1:]
+		if st.pos == posend20 {
+			ret = min(ret, st.count)
+			continue
+		}
+		if v, found := visited[st.pos]; found && st.count >= v {
+			continue
+		}
+		visited[st.pos] = st.count
+		y, x := st.pos/cols20, st.pos%cols20
+		for _, dir := range dirs20 {
+			ynew, xnew := y+dir[0], x+dir[1]
+			if ynew > 0 && ynew < rows20-1 && xnew > 0 && xnew < cols20-1 {
+				if input20[ynew*cols20+xnew] {
+					cheat1 := ynew*cols20 + xnew
+					for _, dir2 := range dirs20 {
+						ynew2, xnew2 := ynew+dir2[0], xnew+dir2[1]
+						if (ynew2 != ynew || xnew2 != xnew) && ynew2 > 0 && ynew2 < rows20-1 && xnew > 0 && xnew2 < cols20-1 {
+							cheat2 := ynew2*cols20 + xnew2
+							count := fast20(cheat1, cheat2)
+							if count <= maxcount {
+								cheats[stc20{cheat1, cheat2}] = nil
+							}
+						}
+					}
+				} else {
+					list = append(list, st20{ynew*cols20 + xnew, st.count + 1})
+				}
+			}
+		}
+	}
+	return len(cheats)
 }
 
 // 9324 (sample 84)
@@ -54,6 +98,9 @@ func fast20(cheat1, cheat2 int) int {
 	for len(list) > 0 {
 		st := list[0]
 		list = list[1:]
+		if st.pos == cheat1 {
+			st = st20{cheat2, st.count + 1}
+		}
 		if st.pos == posend20 {
 			ret = min(ret, st.count)
 			continue
