@@ -48,7 +48,7 @@ func solve17c() {
 	program := []int{2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 6, 5, 5, 3, 0}
 outer:
 	for aa := 1; ; aa++ {
-		if aa%10_000_000 == 0 {
+		if aa%10_000_000_000 == 0 {
 			fmt.Println(aa)
 		}
 		count := 0
