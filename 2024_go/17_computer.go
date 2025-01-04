@@ -13,7 +13,7 @@ var (
 // takes hours, algorithm can surely be optimized
 func main() {
 	//solve17a()
-	solve17b()
+	solve17c()
 }
 
 func solve17a() {
@@ -39,6 +39,29 @@ func solve17b() {
 		}
 		if calc17(a, b, c, program, true) != nil {
 			fmt.Println(a)
+			break
+		}
+	}
+}
+
+func solve17c() {
+	program := []int{2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 6, 5, 5, 3, 0}
+outer:
+	for aa := 1; ; aa++ {
+		if aa%10_000_000 == 0 {
+			fmt.Println(aa)
+		}
+		count := 0
+		for a, b := aa, 0; a > 0; count++ {
+			b = (a & 7) ^ 5
+			a /= 1 << 3
+			out := (b ^ 6 ^ (a / (1 << b))) & 7
+			if count == len(program) || out != program[count] {
+				continue outer
+			}
+		}
+		if count == len(program) {
+			fmt.Println(aa)
 			break
 		}
 	}
