@@ -7,15 +7,16 @@ import (
 	"os"
 )
 
-// XX XX (sample XX XX)
+// 1338 XX
 func main() {
-	solve("20_sample.txt", line20, nil, func() int { return solve20(false) }, func() int { return solve20(true) })
+	solve("20_input.txt", line20, nil, func() int { return solve20(false) }, func() int { return solve20(true) })
 }
 
 var (
-	input20                            = make([]bool, 0)
-	rows20, cols20, posini20, posend20 int
-	dirs20                             = [][]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
+	input20            = make([]bool, 0)
+	rows20, cols20     int
+	posini20, posend20 int
+	dirs20             = [][]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
 )
 
 func line20(line string) {
@@ -47,7 +48,7 @@ func solve20(b bool) int {
 }
 
 func calc20() int {
-	maxcount := fast20(0, 0) - 64
+	fast := fast20(posini20, math.MaxInt) - 100
 	cheats := make(map[stc20]interface{})
 	visited := make(map[int]int)
 	list := []st20{{posini20, 0}}
@@ -66,21 +67,22 @@ func calc20() int {
 		y, x := st.pos/cols20, st.pos%cols20
 		for _, dir := range dirs20 {
 			ynew, xnew := y+dir[0], x+dir[1]
-			if ynew > 0 && ynew < rows20-1 && xnew > 0 && xnew < cols20-1 {
-				if input20[ynew*cols20+xnew] {
-					cheat1 := ynew*cols20 + xnew
-					for _, dir2 := range dirs20 {
-						ynew2, xnew2 := ynew+dir2[0], xnew+dir2[1]
-						if (ynew2 != ynew || xnew2 != xnew) && ynew2 > 0 && ynew2 < rows20-1 && xnew > 0 && xnew2 < cols20-1 {
-							cheat2 := ynew2*cols20 + xnew2
-							count := fast20(cheat1, cheat2)
-							if count <= maxcount {
-								cheats[stc20{cheat1, cheat2}] = nil
-							}
-						}
+			if ynew <= 0 || ynew >= rows20-1 || xnew <= 0 || xnew >= cols20-1 {
+				continue
+			}
+			cheat1 := ynew*cols20 + xnew
+			if !input20[cheat1] {
+				list = append(list, st20{cheat1, st.count + 1})
+				continue
+			}
+			for _, dir2 := range dirs20 {
+				ynew2, xnew2 := ynew+dir2[0], xnew+dir2[1]
+				cheat2 := ynew2*cols20 + xnew2
+				if ynew2 > 0 && ynew2 < rows20-1 && xnew > 0 && xnew2 < cols20-1 && !input20[cheat2] {
+					need := fast - st.count - 2
+					if fast20(cheat2, need) <= need {
+						cheats[stc20{cheat1, cheat2}] = nil
 					}
-				} else {
-					list = append(list, st20{ynew*cols20 + xnew, st.count + 1})
 				}
 			}
 		}
@@ -89,21 +91,17 @@ func calc20() int {
 }
 
 // 9324 (sample 84)
-func fast20(cheat1, cheat2 int) int {
-	old1, old2 := input20[cheat1], input20[cheat2]
-	input20[cheat1], input20[cheat2] = false, false
+func fast20(start, maxcount int) int {
 	visited := make(map[int]int)
-	list := []st20{{posini20, 0}}
-	ret := math.MaxInt
+	list := []st20{{start, 0}}
 	for len(list) > 0 {
 		st := list[0]
 		list = list[1:]
-		if st.pos == cheat1 {
-			st = st20{cheat2, st.count + 1}
+		if st.count > maxcount {
+			continue
 		}
 		if st.pos == posend20 {
-			ret = min(ret, st.count)
-			continue
+			return st.count
 		}
 		if v, found := visited[st.pos]; found && st.count >= v {
 			continue
@@ -112,13 +110,12 @@ func fast20(cheat1, cheat2 int) int {
 		y, x := st.pos/cols20, st.pos%cols20
 		for _, dir := range dirs20 {
 			ynew, xnew := y+dir[0], x+dir[1]
-			if ynew >= 0 && ynew < rows20 && xnew >= 0 && xnew < cols20 && !input20[ynew*cols20+xnew] {
+			if ynew > 0 && ynew < rows20-1 && xnew > 0 && xnew < cols20-1 && !input20[ynew*cols20+xnew] {
 				list = append(list, st20{ynew*cols20 + xnew, st.count + 1})
 			}
 		}
 	}
-	input20[cheat1], input20[cheat2] = old1, old2
-	return ret
+	return math.MaxInt
 }
 
 // DELETE
