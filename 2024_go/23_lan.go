@@ -9,9 +9,10 @@ import (
 	"strings"
 )
 
-// 1083 XX (sample 7 XX)
+// 1083 as,bu,cp,dj,ez,fd,hu,it,kj,nx,pp,xh,yu (sample 7 co,de,ka,ta)
 func main() {
 	solve23a()
+	solve23b()
 }
 
 var (
@@ -19,33 +20,7 @@ var (
 )
 
 func solve23a() {
-	f, _ := os.Open("inputs/" + file23)
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	m := make(map[string][]string)
-	elms := make(map[string]struct{})
-	for scanner.Scan() {
-		line := scanner.Text()
-		a, b := line[0:2], line[3:5]
-		elms[a] = struct{}{}
-		elms[b] = struct{}{}
-		m[a] = append(m[a], b)
-		m[b] = append(m[b], a)
-	}
-	sorted := make([]string, 0, len(elms))
-	for k := range elms {
-		sorted = append(sorted, k)
-	}
-	sort.Strings(sorted)
-	n := len(sorted)
-	matrix := make([]bool, n*n)
-	for i := range sorted {
-		for _, val := range m[sorted[i]] {
-			j := slices.Index(sorted, val)
-			matrix[i*n+j] = true
-			matrix[j*n+i] = true
-		}
-	}
+	n, list, matrix := get23()
 	total := 0
 	for i := 0; i < n; i++ {
 		for j := i + 1; j < n; j++ {
@@ -53,7 +28,7 @@ func solve23a() {
 				if i == j || i == k || j == k || !matrix[i*n+j] || !matrix[j*n+k] || !matrix[i*n+k] {
 					continue
 				}
-				if strings.HasPrefix(sorted[i], "t") || strings.HasPrefix(sorted[j], "t") || strings.HasPrefix(sorted[k], "t") {
+				if strings.HasPrefix(list[i], "t") || strings.HasPrefix(list[j], "t") || strings.HasPrefix(list[k], "t") {
 					total++
 				}
 			}
@@ -62,13 +37,70 @@ func solve23a() {
 	fmt.Println(total)
 }
 
-func extract23(elms map[string]struct{}) string {
-	if len(elms) == 0 {
-		panic("empty")
+func solve23b() {
+	n, computers, matrix := get23()
+	states := make([][]int, n)
+	var longest []int
+	for i := range n {
+		states[i] = []int{i}
 	}
-	for k := range elms {
-		delete(elms, k)
-		return k
+	for len(states) > 0 {
+		state := states[0]
+		states = states[1:]
+		if len(state) > len(longest) {
+			longest = state
+		}
+		last := state[len(state)-1]
+		for j := last + 1; j < n; j++ {
+			together := true
+			for i := 0; i < len(state); i++ {
+				if !matrix[state[i]*n+j] {
+					together = false
+					break
+				}
+			}
+			if together {
+				newState := make([]int, len(state)+1)
+				copy(newState, state)
+				newState[len(newState)-1] = j
+				states = append(states, newState)
+			}
+		}
 	}
-	panic("unreachable")
+	var ret []string
+	for _, i := range longest {
+		ret = append(ret, computers[i])
+	}
+	fmt.Println(strings.Join(ret, ","))
+}
+
+func get23() (n int, list []string, matrix []bool) {
+	f, _ := os.Open("inputs/" + file23)
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	m := make(map[string][]string)
+	unsorted := make(map[string]struct{})
+	for scanner.Scan() {
+		line := scanner.Text()
+		a, b := line[0:2], line[3:5]
+		unsorted[a] = struct{}{}
+		unsorted[b] = struct{}{}
+		m[a] = append(m[a], b)
+		m[b] = append(m[b], a)
+	}
+	list = make([]string, 0, len(unsorted))
+	for k := range unsorted {
+		list = append(list, k)
+	}
+	sort.Strings(list)
+	n = len(list)
+	matrix = make([]bool, n*n)
+	for i := range list {
+		for _, val := range m[list[i]] {
+			j := slices.Index(list, val)
+			matrix[i*n+j] = true
+			matrix[j*n+i] = true
+		}
+	}
+	return
 }
