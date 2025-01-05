@@ -9,7 +9,7 @@ import (
 
 // 1338 XX
 func main() {
-	solve("20_input.txt", line20, nil, func() int { return solve20(false) }, func() int { return solve20(true) })
+	solve("20_input.txt", line20, nil, func() int { return calc20(2) }, func() int { return calc20(20) })
 }
 
 var (
@@ -43,13 +43,14 @@ type stc20 struct {
 	cheat1, cheat2 int
 }
 
-func solve20(b bool) int {
-	return calc20()
+type ste20 struct {
+	pos, count int
+	visited    map[int]struct{}
 }
 
-func calc20() int {
+func calc20(picoseconds int) int {
 	fast := fast20(posini20, math.MaxInt) - 100
-	cheats := make(map[stc20]interface{})
+	cheats := make(map[stc20]struct{})
 	visited := make(map[int]int)
 	list := []st20{{posini20, 0}}
 	ret := math.MaxInt
@@ -67,27 +68,69 @@ func calc20() int {
 		y, x := st.pos/cols20, st.pos%cols20
 		for _, dir := range dirs20 {
 			ynew, xnew := y+dir[0], x+dir[1]
-			if ynew <= 0 || ynew >= rows20-1 || xnew <= 0 || xnew >= cols20-1 {
+			if ynew < 0 || ynew > rows20-1 || xnew < 0 || xnew > cols20-1 {
 				continue
 			}
-			cheat1 := ynew*cols20 + xnew
-			if !input20[cheat1] {
-				list = append(list, st20{cheat1, st.count + 1})
+			posnew := ynew*cols20 + xnew
+			if !input20[posnew] {
+				list = append(list, st20{posnew, st.count + 1})
 				continue
 			}
-			for _, dir2 := range dirs20 {
-				ynew2, xnew2 := ynew+dir2[0], xnew+dir2[1]
-				cheat2 := ynew2*cols20 + xnew2
-				if ynew2 > 0 && ynew2 < rows20-1 && xnew > 0 && xnew2 < cols20-1 && !input20[cheat2] {
-					need := fast - st.count - 2
-					if fast20(cheat2, need) <= need {
-						cheats[stc20{cheat1, cheat2}] = nil
-					}
-				}
-			}
+			expand20(posnew, fast-st.count-1, picoseconds, cheats)
 		}
 	}
 	return len(cheats)
+}
+
+func expand20(cheatini, need, picoseconds int, cheats map[stc20]struct{}) {
+	y, x := cheatini/cols20, cheatini%cols20
+	list := []ste20{{cheatini, 0, make(map[int]struct{})}}
+	for len(list) > 0 {
+		st := list[0]
+		list = list[1:]
+		cheatkey := stc20{cheatini, st.pos}
+		if _, found := cheats[cheatkey]; !found {
+			if st.pos == posend20 {
+				cheats[cheatkey] = struct{}{}
+				//continue
+			} else if !input20[st.pos] {
+				if fast20(st.pos, need-st.count) <= need-st.count {
+					cheats[cheatkey] = struct{}{}
+				}
+			}
+		}
+		if st.count >= need || st.count >= picoseconds-1 {
+			continue
+		}
+		y, x := st.pos/cols20, st.pos%cols20
+
+		for _, dir := range dirs20 {
+			ynew, xnew := y+dir[0], x+dir[1]
+			if ynew < 0 || ynew > rows20-1 || xnew < 0 || xnew > cols20-1 {
+				continue
+			}
+			posnew := ynew*cols20 + xnew
+			if _, found := st.visited[posnew]; found {
+				continue
+			}
+			stnew := ste20{posnew, st.count + 1, map[int]struct{}{posnew: {}}}
+			for k := range st.visited {
+				stnew.visited[k] = struct{}{}
+			}
+			list = append(list, stnew)
+		}
+	}
+
+	for _, dir2 := range dirs20 {
+		ynew2, xnew2 := y+dir2[0], x+dir2[1]
+		cheat2 := ynew2*cols20 + xnew2
+		if ynew2 > 0 && ynew2 < rows20-1 && xnew2 > 0 && xnew2 < cols20-1 && !input20[cheat2] {
+			need--
+			if fast20(cheat2, need) <= need {
+				cheats[stc20{cheatini, cheat2}] = struct{}{}
+			}
+		}
+	}
 }
 
 // 9324 (sample 84)
