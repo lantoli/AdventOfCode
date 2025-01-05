@@ -46,28 +46,20 @@ func solve23a() {
 			matrix[j*n+i] = true
 		}
 	}
-	rets := make(map[string]struct{}, 0)
-	for i := range sorted {
-		if !strings.HasPrefix(sorted[i], "t") {
-			continue
-		}
-		for j := range sorted {
-			if j == i || !matrix[i*n+j] {
-				continue
-			}
+	total := 0
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
 			for k := j + 1; k < n; k++ {
-				if k == i || !matrix[j*n+k] {
+				if i == j || i == k || j == k || !matrix[i*n+j] || !matrix[j*n+k] || !matrix[i*n+k] {
 					continue
 				}
-				if matrix[i*n+k] {
-					ret := []string{sorted[i], sorted[j], sorted[k]}
-					sort.Strings(ret)
-					rets[ret[0]+ret[1]+ret[2]] = struct{}{}
+				if strings.HasPrefix(sorted[i], "t") || strings.HasPrefix(sorted[j], "t") || strings.HasPrefix(sorted[k], "t") {
+					total++
 				}
 			}
 		}
 	}
-	fmt.Println(len(rets))
+	fmt.Println(total)
 }
 
 func extract23(elms map[string]struct{}) string {
