@@ -11,6 +11,7 @@ var (
 
 // 3,6,3,7,0,7,0,3,0 869230000000 too low (sample 4,6,3,5,6,3,5,2,1,0 117440)
 // takes hours, algorithm can surely be optimized
+// WIP: 91200000000000, estimated 8^11 = 281474976710656
 func main() {
 	//solve17a()
 	solve17c()
