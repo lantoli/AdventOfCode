@@ -11,7 +11,7 @@ var (
 
 // 3,6,3,7,0,7,0,3,0 869230000000 too low (sample 4,6,3,5,6,3,5,2,1,0 117440)
 // takes hours, algorithm can surely be optimized
-// WIP: 91200000000000, estimated 8^11 = 281474976710656
+// WIP: 374940000000000, estimated 8^11 = 281474976710656
 func main() {
 	//solve17a()
 	solve17c()
@@ -48,7 +48,7 @@ func solve17b() {
 func solve17c() {
 	program := []int{2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 6, 5, 5, 3, 0}
 outer:
-	for aa := 1; ; aa++ {
+	for aa := 374940000000000; ; aa++ {
 		if aa%10_000_000_000 == 0 {
 			fmt.Println(aa)
 		}
