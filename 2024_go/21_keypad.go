@@ -6,12 +6,13 @@ import (
 	"math"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 )
 
-// XX XX (sample 126384 XX)
+// 188384 XX (sample 126384 XX)
 func main() {
-	solve("21_sample.txt", line21, nil, func() int { return solve21(false) }, func() int { return solve21(true) })
+	solve("21_input.txt", line21, nil, func() int { return solve21(false) }, func() int { return solve21(true) })
 }
 
 var (
@@ -26,6 +27,9 @@ func line21(line string) {
 }
 
 func solve21(b bool) int {
+	if b {
+		return -1
+	}
 	total := 0
 	for _, codes := range input21 {
 		total += calc21(codes)
@@ -33,27 +37,31 @@ func solve21(b bool) int {
 	return total
 }
 
-func calc21(codes string) int {
+func calc21(code string) int {
 	numpad := []rune{'7', '8', '9', '4', '5', '6', '1', '2', '3', 0, '0', 'A'}
 	dirpad := []rune{0, '^', 'A', '<', 'v', '>'}
 
-	nummap := path21(numpad)
-	dirmap := path21(dirpad)
-	
-		num := 'A'
-		dir1 := 'A'
-		minlen = math.MaxInt
-		for _, code := range codes {
-			for _, numinfo := nummap[num][code] {
-				paths, dirs := numinfo.path, numinfo.dirs
-				for i := range paths {
-					
-				}
-			}
-		}
-	
-	_, _ = nummap, dirmap
-	return 0
+	nummap := initPaths21(numpad)
+	dirmap := initPaths21(dirpad)
+
+	ret := math.MaxInt
+
+	dirs := nextdirs21(code, nummap)
+	for i := range 2 {
+		dirs = apply21(dirs, dirmap)
+		fmt.Print(i, ", ", len(dirs), ", ", len21(dirs), "---")
+	}
+	ret = min(ret, code21(code)*len21(dirs))
+	fmt.Println()
+	return ret
+}
+
+func apply21(ins []string, pad map[rune]map[rune][]stp21) []string {
+	ret := make([]string, 0)
+	for _, in := range ins {
+		ret = append(ret, nextdirs21(in, pad)...)
+	}
+	return ret
 }
 
 type st21 struct {
@@ -66,7 +74,58 @@ type stp21 struct {
 	dirs string
 }
 
-func path21(grid []rune) map[rune]map[rune][]stp21 {
+func code21(code string) int {
+	numStr := ""
+	for _, elm := range code {
+		if elm != 'A' {
+			numStr += string(elm)
+		}
+	}
+	num, _ := strconv.Atoi(numStr)
+	return num
+}
+
+func len21(dirs []string) int {
+	ret := math.MaxInt
+	for _, dir := range dirs {
+		ret = min(ret, len(dir))
+	}
+	return ret
+}
+
+func nextdirs21(code string, pad map[rune]map[rune][]stp21) []string {
+	dirs := []string{""}
+	prev := 'A'
+	for _, next := range code {
+		nextdirs := []string{}
+		for _, path := range pad[prev][next] {
+			for _, dir := range dirs {
+				nextdirs = append(nextdirs, dir+path.dirs+"A")
+			}
+		}
+		prev = next
+		dirs = nextdirs
+	}
+	return dirs
+}
+
+func simplify21(dirs []string) []string {
+	ends := make(map[string]string)
+	for _, dir := range dirs {
+		key := dir[0:1] + dir[len(dir)-1:len(dir)]
+		val, found := ends[key]
+		if !found || len(val) > len(dir) {
+			ends[key] = dir
+		}
+	}
+	ret := make([]string, 0)
+	for _, end := range ends {
+		ret = append(ret, end)
+	}
+	return ret
+}
+
+func initPaths21(grid []rune) map[rune]map[rune][]stp21 {
 	rets := make(map[rune]map[rune][]stp21)
 	rows := len(grid) / cols21
 	for pos, button := range grid {
