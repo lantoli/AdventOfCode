@@ -5,72 +5,61 @@ import (
 	"strings"
 )
 
-var (
-	isInput17 = true
-)
-
-// 3,6,3,7,0,7,0,3,0 869230000000 too low (sample 4,6,3,5,6,3,5,2,1,0 117440)
-// takes hours, algorithm can surely be optimized
-// WIP: 374940000000000, estimated 8^11 = 281474976710656
+// 3,6,3,7,0,7,0,3,0 136904920099226 (sample 4,6,3,5,6,3,5,2,1,0 117440)
 func main() {
-	//solve17a()
-	solve17c()
+	solve17a(true)
+	solve17b()
 }
 
-func solve17a() {
+func solve17a(isInput bool) {
 	a, b, c := 729, 0, 0
 	program := []int{0, 1, 5, 4, 3, 0}
-	if isInput17 {
-		a = 51064159
+	if isInput {
+		a = 136904920099226 // 51064159
 		program = []int{2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 6, 5, 5, 3, 0}
 	}
-	out := calc17(a, b, c, program, false)
+	out := calc17(a, b, c, program)
 	fmt.Println(strings.Trim(strings.Join(strings.Fields(strings.Trim(fmt.Sprint(out), "[]")), ","), " "))
 }
 
 func solve17b() {
-	b, c := 0, 0
-	program := []int{0, 3, 5, 4, 3, 0}
-	if isInput17 {
-		program = []int{2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 6, 5, 5, 3, 0}
-	}
-	for a := 0; ; a++ {
-		if a%10_000_000 == 0 {
-			fmt.Println(a)
-		}
-		if calc17(a, b, c, program, true) != nil {
-			fmt.Println(a)
-			break
-		}
-	}
+	program := []int{2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 6, 5, 5, 3, 0}
+	fmt.Println(calc17b(0, 0, program))
 }
 
-func solve17c() {
-	program := []int{2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 6, 5, 5, 3, 0}
-outer:
-	for aa := 374940000000000; ; aa++ {
-		if aa%10_000_000_000 == 0 {
-			fmt.Println(aa)
-		}
-		count := 0
-		for a, b := aa, 0; a > 0; count++ {
-			b = (a & 7) ^ 5
-			a /= 1 << 3
-			out := (b ^ 6 ^ (a / (1 << b))) & 7
-			if count == len(program) || out != program[count] {
-				continue outer
+func calc17b(aa, matches int, program []int) int {
+	aa *= 8
+	for i := range 8 {
+		a := aa + i
+		out := calc17(a, 0, 0, program)
+		if program[len(program)-1-matches] == out[len(out)-1-matches] {
+			if len(program)-1-matches == 0 {
+				return a
+			}
+			if ret := calc17b(a, matches+1, program); ret != -1 {
+				return ret
 			}
 		}
-		if count == len(program) {
-			fmt.Println(aa)
-			break
-		}
 	}
+	return -1
 }
 
-func calc17(a, b, c int, program []int, checkEqual bool) []int {
+// In each iteration an output is shown and a is divided by 8, values for b and c are reset.
+func solve17c() {
+	a := 136904920099226
+	outs := make([]int, 0)
+	count := 0
+	for ; a > 0; count++ {
+		b := (a % 8) ^ 5
+		out := (b ^ 6 ^ (a / (1 << b))) % 8
+		a /= 8
+		outs = append(outs, out)
+	}
+	fmt.Println(outs)
+}
+
+func calc17(a, b, c int, program []int) []int {
 	out := make([]int, 0)
-	outCount := 0
 	for ip := 0; ip < len(program); {
 		opcode, literal := program[ip], program[ip+1]
 		combo := literal
@@ -98,14 +87,7 @@ func calc17(a, b, c int, program []int, checkEqual bool) []int {
 			b ^= c
 		case 5: // out
 			val := combo % 8
-			if checkEqual {
-				if outCount == len(program) || val != program[outCount] {
-					return nil
-				}
-				outCount++
-			} else {
-				out = append(out, val)
-			}
+			out = append(out, val)
 		case 6: // bdv
 			b = a / (1 << combo)
 		case 7: // cdv
@@ -115,13 +97,6 @@ func calc17(a, b, c int, program []int, checkEqual bool) []int {
 		}
 		if moveip {
 			ip += 2
-		}
-	}
-	if checkEqual {
-		if outCount != len(program) {
-			return nil
-		} else {
-			return program
 		}
 	}
 	return out
