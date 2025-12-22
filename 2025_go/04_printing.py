@@ -27,9 +27,9 @@ def solve04(grid: list[list[bool]], part_b: bool) -> int:
 
 
 if __name__ == "__main__":
-    with open("inputs/04_sample.txt", 'r') as f:
+    with open("inputs/04_sample.txt") as f:
         s = [[c == '@' for c in line.strip()] for line in f]
-    with open("inputs/04_input.txt", 'r') as f:
+    with open("inputs/04_input.txt") as f:
         i = [[c == '@' for c in line.strip()] for line in f]
 
     print(f"Sample A: {solve04(s, False)}") # 13

@@ -7,4 +7,5 @@ cd 2025_go
 
 // to run a challegenge you can do something like:
 go run 01_entrance.go
+python 04_printing.py
 ```
