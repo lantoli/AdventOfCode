@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from dataclasses import dataclass
+from itertools import combinations
 
 
 @dataclass
@@ -33,8 +34,7 @@ def solve08(lines: list[str], connections: int, b: bool) -> int:
 
     edges = [
         Edge(i, j, sum((a - b) ** 2 for a, b in zip(coords[i], coords[j])))
-        for i in range(n)
-        for j in range(i + 1, n)
+        for i, j in combinations(range(n), 2)
     ]
 
     if b:
